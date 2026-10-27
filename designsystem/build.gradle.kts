@@ -2,12 +2,18 @@
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
 }
 
 kotlin {
     jvm()
+    androidLibrary {
+        namespace = "com.eec.design"
+        compileSdk = 37
+        minSdk = 26
+    }
     wasmJs {
         browser()
     }

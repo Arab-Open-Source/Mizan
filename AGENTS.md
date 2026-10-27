@@ -14,16 +14,21 @@ Mizan is a personal expense tracker built with Kotlin Multiplatform (Desktop JVM
 ./gradlew :composeApp:wasmJsBrowserDistribution
 ./gradlew :core:jvmTest
 ./gradlew :composeApp:jvmTest
+./gradlew :androidApp:assembleDebug
 bash scripts/check-no-emoji.sh
 git diff --check
 ```
+
+Android builds need ANDROID_HOME pointing at a local SDK with platform 37 and build tools installed.
 
 Desktop run: `./gradlew :composeApp:run`
 Wasm dev: `./gradlew :composeApp:wasmJsBrowserDevelopmentRun`
 
 ## Architecture
 
-- Modules: `composeApp -> core, designsystem`. `core` has no Compose. `designsystem` has no core.
+- Modules: `androidApp -> composeApp, core`; `composeApp -> core, designsystem`. `core` has no Compose. `designsystem` has no core.
+- Android: `androidApp` is the only `com.android.application` module; the shared modules use `com.android.kotlin.multiplatform.library`. Android namespaces are `com.eec.core`, `com.eec.design`, `com.eec.app.shared`, and `com.eec.app.android`. compileSdk 37, minSdk 26.
+- Android entry point: `androidApp` MainActivity creates the Room database, initializes `AndroidShareContext`, and calls the shared `App(database)`.
 - Package: `com.eec.*`. Application id: `com.eec.app`.
 - Money: Long minor units (piasters). No Double near money.
 - Dates: kotlinx-datetime + Clock abstraction. No System.currentTimeMillis() outside container.

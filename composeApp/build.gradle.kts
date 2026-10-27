@@ -2,12 +2,18 @@
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
 }
 
 kotlin {
     jvm()
+    androidLibrary {
+        namespace = "com.eec.app.shared"
+        compileSdk = 37
+        minSdk = 26
+    }
     wasmJs {
         browser()
         binaries.executable()
@@ -34,6 +40,9 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
+        }
+        androidMain.dependencies {
+            implementation(libs.androidx.appcompat)
         }
         jvmTest.dependencies {
             implementation(libs.kotlinx.coroutines.test)

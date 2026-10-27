@@ -2,12 +2,18 @@
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
 }
 
 kotlin {
     jvm()
+    androidLibrary {
+        namespace = "com.eec.core"
+        compileSdk = 37
+        minSdk = 26
+    }
     wasmJs {
         browser()
     }
@@ -29,6 +35,10 @@ kotlin {
         jvmMain.dependencies {
             implementation(libs.sqlite.bundled)
         }
+        androidMain.dependencies {
+            implementation(libs.sqlite.bundled)
+            implementation(libs.androidx.core.ktx)
+        }
         wasmJsMain.dependencies {
             implementation(libs.sqlite.web)
             implementation(libs.kotlinx.browser)
@@ -38,6 +48,7 @@ kotlin {
 
 dependencies {
     add("kspJvm", libs.room.compiler)
+    add("kspAndroid", libs.room.compiler)
     add("kspWasmJs", libs.room.compiler)
 }
 

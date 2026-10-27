@@ -7,7 +7,7 @@
 - Web worker assets include sqlite3-worker1-bundler-friendly.mjs and sqlite3-bundler-friendly.mjs in addition to the three listed, required by webpack resolution.
 - gradle.properties heap raised to avoid GC overhead limit during wasm compile.
 - DoD gate :jvmTest interpreted as :core:jvmTest + :composeApp:jvmTest (no root test module).
-- Android/iOS targets configured but not compiled on this host (no SDK/Xcode); reported as skipped.
+- Android is a compiled target: set ANDROID_HOME to a local SDK to run :androidApp:assembleDebug. iOS remains unconfigured.
 - Vibrant palette replaces the M1 muted tokens: light primary #0E7C6B, secondary #9A5B12, tertiary #C2410C; dark primary #5EEAD4, secondary #FCD34D, tertiary #FDBA74. Category colors derive from the same tokens and every text/icon-on-surface pair was checked at 4.5:1 or better.
 - User-created categories use UUID primary keys; seed categories keep stable slugs so re-seeding stays idempotent by primary key.
 - New categories default to icon_key note. Rename and recolor update only name and color_key, so kind, icon, and sort_order stay stable.
@@ -38,3 +38,11 @@
 - PIN lock scope is the UI only: optional four-to-six digits, iterated salted hash under app_lock, checked at launch, no re-lock of the running session, no schema change, and no database encryption.
 - Project renamed from EEC to Mizan in user-facing docs, app name, and share text; BRIEF.md untouched per working agreement.
 - Project logo set to the supplied Mizan mark (composeResources/drawable/mizan_logo.png); used as desktop window icon and favicon.
+- Android uses AGP 9.4.1 with Gradle 9.8.2; all shared modules apply com.android.kotlin.multiplatform.library, and androidApp is the only com.android.application module.
+- Android namespaces are com.eec.core, com.eec.design, com.eec.app.shared, and com.eec.app.android. compileSdk is 37, minSdk is 26, and targetSdk is 37.
+- androidApp hosts the only activity. MainActivity creates the Room database once and calls the shared App(database), so Compose UI, navigation, and screen models stay in common code.
+- Room 3 runs on Android through BundledSQLiteDriver using a file under context.getDatabasePath(AppDatabase.NAME); kspAndroid generates the Android database constructor.
+- The Android ShareService actual uses a process-wide AndroidShareContext initialized in MainActivity. Files are written to cache/shared and exposed through the com.eec.app.fileprovider authority declared in the manifest.
+- Android locale changes set the default Locale and AppCompatDelegate application locales, matching the JVM and Wasm language behavior without a restart.
+- Launcher icon uses the framework sym_def_app_icon; no custom Android icon asset is added in this migration.
+- Android adds androidx.appcompat 1.7.1, androidx.activity:activity-compose 1.10.1, and androidx.core:core-ktx 1.19.1. Core ktx supplies FileProvider to the core Android source set and also arrives transitively with appcompat in androidApp.
