@@ -12,7 +12,7 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 
-val CairoTimeZone: TimeZone = TimeZone.of("Africa/Cairo")
+val CairoTimeZone: TimeZone = TimeZone.of("UTC+02:00")
 
 fun Instant.toCairoDate(): LocalDate = toLocalDateTime(CairoTimeZone).date
 
