@@ -1,0 +1,26 @@
+- Room 3 group is androidx.room3; artifacts are room3-runtime/room3-compiler; plugin id androidx.room3; extension room3 {}.
+- KSP 2.3.12 with Kotlin 2.4.21; @ConstructedBy required for non-Android targets.
+- Money is data class (not value class) so common code compiles on JVM without @JvmInline.
+- Daily totals use one SQL SUM per calendar day in Cairo (N queries/month) to keep aggregation in SQL and DST-correct.
+- ShareService extended beyond brief's three methods with copyText/openLink for desktop emulation and Wasm fallback.
+- Added kotlinx-coroutines-swing for JVM Compose and kotlinx-datetime to composeApp.
+- Web worker assets include sqlite3-worker1-bundler-friendly.mjs and sqlite3-bundler-friendly.mjs in addition to the three listed, required by webpack resolution.
+- gradle.properties heap raised to avoid GC overhead limit during wasm compile.
+- DoD gate :jvmTest interpreted as :core:jvmTest + :composeApp:jvmTest (no root test module).
+- Android/iOS targets configured but not compiled on this host (no SDK/Xcode); reported as skipped.
+- Vibrant palette replaces the M1 muted tokens: light primary #0E7C6B, secondary #9A5B12, tertiary #C2410C; dark primary #5EEAD4, secondary #FCD34D, tertiary #FDBA74. Category colors derive from the same tokens and every text/icon-on-surface pair was checked at 4.5:1 or better.
+- User-created categories use UUID primary keys; seed categories keep stable slugs so re-seeding stays idempotent by primary key.
+- New categories default to icon_key note. Rename and recolor update only name and color_key, so kind, icon, and sort_order stay stable.
+- Category management is a pushed Categories destination reached from Settings. The four top-level destinations are unchanged and the Settings navigation item stays selected while Categories is open.
+- Categories are archived, never deleted, because transactions restrict deletion with a foreign key. Archiving is reversible from the same editor.
+- Category names are capped at 40 characters in the repository. Color keys are checked non-blank in core and constrained to the eight design-system keys by the UI.
+- No Room schema change: category management uses the existing categories table at database version 1.
+- Dashboard stat cards use the vibrant container tokens (dangerContainer, successContainer, primaryContainer) with matching accents, so expense, income, and net read as three different kinds of money instead of three identical white cards.
+- Categories accept raw #RRGGBB colors in addition to the eight palette keys. The palette resolves a valid hex value before a token key, so user-picked colors survive theme changes, while seeds keep stable token keys.
+- ColorHex.onColorFor chooses #141414 or #FFFFFF from relative luminance instead of theme tokens, because a user-picked hex surface must stay legible in both light and dark themes.
+- Added androidx.navigation:navigation-compose 2.9.2, which overrides the brief's "no navigation library" rule. Screen, Screen.route, and EecNavigator still wrap the controller, so screens never touch NavController and the typed back stack stays a small surface; a hand-rolled stack would need extra save/restore plumbing on Wasm and desktop.
+- PIN lock stores only PinLock.hash(pin) under settings key app_lock. The presence of the key means enabled; removing the key disables the lock. No schema change, no plaintext PIN.
+- Enabling or changing the PIN does not lock the running session; the lock takes effect on the next launch. The current session already proved knowledge of the PIN, and re-locking after a change would interrupt settings work.
+- AppScreenModel owns the session lock state (lockEnabled, locked, pinError) and compares the entered PIN with the hash loaded at Start. SettingsScreenModel owns enable/change/disable and calls PinLock.hash/verify itself, then reports the new state through onLockChanged.
+- The lock dialog has three modes (enable, change, disable) rather than separate screens. Disable requires the current PIN; change requires current, new, and confirmation; enable requires new and confirmation.
+- PIN fields use PasswordVisualTransformation with the NumberPassword keyboard, and LockScreen clears the field after every attempt so a retry starts clean.

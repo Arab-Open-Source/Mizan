@@ -1,0 +1,41 @@
+# Gradle
+.gradle/
+build/
+**/build/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Kotlin/Compose
+.kotlin/
+kotlin-js-store/
+
+# Android
+local.properties
+*.apk
+*.aab
+
+# Logs
+*.log
+
+# Schemas? keep schemas (exportSchema). Do not ignore core/schemas.
+
+# Misc
+/tmp
+BRIEF.md
+composeApp/eec.db
+composeApp/eec.db-shm
+composeApp/eec.db.lck
+composeApp/eec.db-wal
+composeApp/eec-transactions-2026-10-27.csv
+scripts/check-no-emoji.sh
