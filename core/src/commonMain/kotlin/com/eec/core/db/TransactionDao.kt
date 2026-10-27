@@ -107,6 +107,19 @@ interface TransactionDao {
 
     @Query(
         """
+        SELECT ((occurred_at + 7200000) / 86400000) AS day_bucket,
+            COALESCE(SUM(amount_minor), 0) AS total_minor
+        FROM transactions
+        WHERE kind = :kind
+            AND occurred_at >= :startInclusive
+            AND occurred_at < :endExclusive
+        GROUP BY day_bucket
+        """,
+    )
+    suspend fun dailyTotals(kind: String, startInclusive: Long, endExclusive: Long): List<DailyBucketRow>
+
+    @Query(
+        """
         SELECT COALESCE(SUM(amount_minor), 0)
         FROM transactions
         WHERE kind = :kind AND occurred_at >= :startInclusive AND occurred_at < :endExclusive

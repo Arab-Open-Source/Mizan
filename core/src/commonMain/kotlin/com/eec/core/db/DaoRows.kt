@@ -35,3 +35,8 @@ data class DailyTotalRow(
     val day: String,
     @ColumnInfo(name = "total_minor") val totalMinor: Long,
 )
+
+data class DailyBucketRow(
+    @ColumnInfo(name = "day_bucket") val dayBucket: Long,
+    @ColumnInfo(name = "total_minor") val totalMinor: Long,
+)

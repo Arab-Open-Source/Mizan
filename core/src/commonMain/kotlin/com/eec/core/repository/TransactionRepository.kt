@@ -16,6 +16,8 @@ import com.eec.core.model.TransactionListItem
 import com.eec.core.time.Clock
 import com.eec.core.time.dayEndExclusive
 import com.eec.core.time.dayStart
+import com.eec.core.time.toCairoDate
+import kotlin.time.Instant
 import com.eec.core.time.days
 import com.eec.core.time.endExclusiveInstant
 import com.eec.core.time.startInstant
@@ -138,13 +140,18 @@ class TransactionRepository(
         return rows.map { it.toDomain() }
     }
 
-    suspend fun dailyExpenseTotals(period: MonthPeriod): List<DailyTotal> = period.days().map { date ->
-        val amount = transactionDao.totalBetween(
+    suspend fun dailyExpenseTotals(period: MonthPeriod): List<DailyTotal> {
+        val rows = transactionDao.dailyTotals(
             kind = TransactionKind.EXPENSE.name,
-            startInclusive = dayStart(date).toEpochMilliseconds(),
-            endExclusive = dayEndExclusive(date).toEpochMilliseconds(),
+            startInclusive = period.startInstant().toEpochMilliseconds(),
+            endExclusive = period.endExclusiveInstant().toEpochMilliseconds(),
         )
-        DailyTotal(date = date, amount = Money.ofMinor(amount))
+        val byDate: Map<kotlinx.datetime.LocalDate, Long> = rows.associate { row ->
+            kotlin.time.Instant.fromEpochMilliseconds(row.dayBucket * 86400000L - 7200000L).toCairoDate() to row.totalMinor
+        }
+        return period.days().map { date ->
+            DailyTotal(date = date, amount = Money.ofMinor(byDate[date] ?: 0L))
+        }
     }
 
     suspend fun exportRows(
