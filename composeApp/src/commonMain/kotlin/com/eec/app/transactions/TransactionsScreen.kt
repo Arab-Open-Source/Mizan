@@ -1,13 +1,17 @@
 package com.eec.app.transactions
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.SnackbarHostState
@@ -17,9 +21,31 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.eec.app.localization.appString
+import com.eec.app.resources.Res
+import com.eec.app.resources.action_add_transaction
+import com.eec.app.resources.action_cancel
+import com.eec.app.resources.action_delete
+import com.eec.app.resources.action_retry
+import com.eec.app.resources.delete_transaction
+import com.eec.app.resources.delete_transaction_message
+import com.eec.app.resources.delete_transaction_title
+import com.eec.app.resources.filter_transactions
+import com.eec.app.resources.search_label
+import com.eec.app.resources.search_placeholder
+import com.eec.app.resources.summary_count
+import com.eec.app.resources.summary_expense
+import com.eec.app.resources.summary_income
+import com.eec.app.resources.transactions_empty_filtered_message
+import com.eec.app.resources.transactions_empty_filtered_title
+import com.eec.app.resources.transactions_empty_message
+import com.eec.app.resources.transactions_empty_title
+import com.eec.app.resources.transactions_error_title
+import com.eec.app.resources.transactions_loading
 import com.eec.app.ui.MaxWidthContent
 import com.eec.app.ui.dayLabel
 import com.eec.app.ui.moneyText
+import com.eec.app.ui.paymentMethodIcon
 import com.eec.app.ui.transactionDate
 import com.eec.app.ui.transactionSubtitle
 import com.eec.core.format.AmountFormatter
@@ -46,8 +72,9 @@ fun TransactionsScreen(
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
-    LaunchedEffect(state.message) {
-        val message = state.message ?: return@LaunchedEffect
+    val message = state.message?.let { appString(it) }
+    LaunchedEffect(message) {
+        if (message == null) return@LaunchedEffect
         snackbarHostState.showSnackbar(message)
         onEvent(TransactionsEvent.MessageShown)
     }
@@ -56,22 +83,34 @@ fun TransactionsScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             TransactionControls(state = state, onEvent = onEvent)
             when {
-                state.loading && state.items.isEmpty() -> LoadingState(message = "جارٍ تحميل المعاملات")
+                state.loading && state.items.isEmpty() -> LoadingState(
+                    message = appString(Res.string.transactions_loading),
+                )
+
                 state.error != null && state.items.isEmpty() -> ErrorState(
-                    title = "تعذر تحميل المعاملات",
+                    title = appString(Res.string.transactions_error_title),
                     message = state.error,
                     onRetry = { onEvent(TransactionsEvent.Retry) },
+                    retryLabel = appString(Res.string.action_retry),
                 )
 
                 state.items.isEmpty() -> EmptyState(
-                    title = if (state.hasFilters) "لا توجد نتائج" else "لا توجد معاملات",
-                    message = if (state.hasFilters) {
-                        "جرّب تغيير البحث أو التصفية."
+                    title = if (state.hasFilters) {
+                        appString(Res.string.transactions_empty_filtered_title)
                     } else {
-                        "أضف أول معاملة لتظهر هنا."
+                        appString(Res.string.transactions_empty_title)
+                    },
+                    message = if (state.hasFilters) {
+                        appString(Res.string.transactions_empty_filtered_message)
+                    } else {
+                        appString(Res.string.transactions_empty_message)
                     },
                     icon = EecIcons.transactions,
-                    actionLabel = if (state.hasFilters) null else "إضافة معاملة",
+                    actionLabel = if (state.hasFilters) {
+                        null
+                    } else {
+                        appString(Res.string.action_add_transaction)
+                    },
                     onAction = if (state.hasFilters) null else onAdd,
                 )
 
@@ -82,10 +121,14 @@ fun TransactionsScreen(
 
     state.pendingDelete?.let { target ->
         ConfirmDialog(
-            title = "حذف المعاملة",
-            message = "سيتم حذف ${target.categoryName} بمبلغ ${AmountFormatter.format(target.amount.minor)}. لا يمكن التراجع.",
-            confirmLabel = "حذف",
-            dismissLabel = "إلغاء",
+            title = appString(Res.string.delete_transaction_title),
+            message = appString(
+                Res.string.delete_transaction_message,
+                target.categoryName,
+                AmountFormatter.format(target.amount.minor),
+            ),
+            confirmLabel = appString(Res.string.action_delete),
+            dismissLabel = appString(Res.string.action_cancel),
             destructive = true,
             onConfirm = { onEvent(TransactionsEvent.ConfirmDelete) },
             onDismiss = { onEvent(TransactionsEvent.CancelDelete) },
@@ -114,15 +157,15 @@ private fun TransactionControls(
             EecTextField(
                 value = state.search,
                 onValueChange = { onEvent(TransactionsEvent.SearchChanged(it)) },
-                label = "بحث",
-                placeholder = "ملاحظة أو تصنيف",
+                label = appString(Res.string.search_label),
+                placeholder = appString(Res.string.search_placeholder),
                 leadingIcon = EecIcons.search,
                 modifier = Modifier.weight(1f),
             )
             IconButton(onClick = { onEvent(TransactionsEvent.ShowFilters) }) {
                 Icon(
                     imageVector = EecIcons.filter,
-                    contentDescription = "تصفية المعاملات",
+                    contentDescription = appString(Res.string.filter_transactions),
                     tint = EecTheme.colors.onBackground,
                 )
             }
@@ -131,9 +174,18 @@ private fun TransactionControls(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            SummaryItem(label = "المصروف", value = moneyText(state.expenseTotal.minor))
-            SummaryItem(label = "الدخل", value = moneyText(state.incomeTotal.minor))
-            SummaryItem(label = "العدد", value = state.items.size.toString())
+            SummaryItem(
+                label = appString(Res.string.summary_expense),
+                value = moneyText(state.expenseTotal.minor),
+            )
+            SummaryItem(
+                label = appString(Res.string.summary_income),
+                value = moneyText(state.incomeTotal.minor),
+            )
+            SummaryItem(
+                label = appString(Res.string.summary_count),
+                value = state.items.size.toString(),
+            )
         }
     }
 }
@@ -219,6 +271,7 @@ private fun TransactionEntry(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TransactionRow(
@@ -230,15 +283,34 @@ private fun TransactionEntry(
                 TransactionKind.INCOME -> AmountSign.Positive
             },
             note = item.note,
+            leading = { TransactionLeadingIcon(item) },
             onClick = onEdit,
             modifier = Modifier.weight(1f),
         )
         IconButton(onClick = onDelete) {
             Icon(
                 imageVector = EecIcons.delete,
-                contentDescription = "حذف المعاملة",
+                contentDescription = appString(Res.string.delete_transaction),
                 tint = EecTheme.colors.onSurfaceVariant,
             )
         }
+    }
+}
+
+@Composable
+private fun TransactionLeadingIcon(item: TransactionListItem) {
+    val color = EecTheme.colors.categoryPalette.colorFor(item.categoryColorKey)
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .background(color = color.copy(alpha = 0.16f), shape = CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = paymentMethodIcon(item.paymentMethod),
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = color,
+        )
     }
 }

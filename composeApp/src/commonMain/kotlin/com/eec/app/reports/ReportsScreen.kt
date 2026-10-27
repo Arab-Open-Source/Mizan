@@ -14,6 +14,31 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.eec.app.localization.appString
+import com.eec.app.resources.Res
+import com.eec.app.resources.action_add_transaction
+import com.eec.app.resources.action_close
+import com.eec.app.resources.action_export_month_csv
+import com.eec.app.resources.action_preview_share
+import com.eec.app.resources.action_retry
+import com.eec.app.resources.average_daily_spend
+import com.eec.app.resources.exporting_csv
+import com.eec.app.resources.no_expenses_this_month
+import com.eec.app.resources.reports_empty_message
+import com.eec.app.resources.reports_empty_title
+import com.eec.app.resources.reports_error_title
+import com.eec.app.resources.reports_loading
+import com.eec.app.resources.section_share_report
+import com.eec.app.resources.section_top_categories
+import com.eec.app.resources.share_copy
+import com.eec.app.resources.share_email
+import com.eec.app.resources.share_email_note
+import com.eec.app.resources.share_export_csv
+import com.eec.app.resources.share_files_unavailable
+import com.eec.app.resources.share_telegram
+import com.eec.app.resources.share_text
+import com.eec.app.resources.share_title
+import com.eec.app.resources.share_whatsapp
 import com.eec.app.ui.CategoryDonutChart
 import com.eec.app.ui.CategoryShareRow
 import com.eec.app.ui.MaxWidthContent
@@ -40,19 +65,21 @@ fun ReportsScreen(
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
-    LaunchedEffect(state.message) {
-        val message = state.message ?: return@LaunchedEffect
+    val message = state.message?.let { appString(it) }
+    LaunchedEffect(message) {
+        if (message == null) return@LaunchedEffect
         snackbarHostState.showSnackbar(message)
         onEvent(ReportsEvent.MessageShown)
     }
 
     MaxWidthContent(modifier) {
         when {
-            state.loading -> LoadingState(message = "جارٍ تجهيز التقرير")
+            state.loading -> LoadingState(message = appString(Res.string.reports_loading))
             state.error != null -> ErrorState(
-                title = "تعذر تجهيز التقرير",
+                title = appString(Res.string.reports_error_title),
                 message = state.error,
                 onRetry = { onEvent(ReportsEvent.Retry) },
+                retryLabel = appString(Res.string.action_retry),
             )
 
             state.isEmpty -> Column(
@@ -67,10 +94,10 @@ fun ReportsScreen(
                     onNext = { onEvent(ReportsEvent.NextMonth) },
                 )
                 EmptyState(
-                    title = "لا توجد بيانات لهذا الشهر",
-                    message = "أضف معاملات ثم عد لرؤية الملخص.",
+                    title = appString(Res.string.reports_empty_title),
+                    message = appString(Res.string.reports_empty_message),
                     icon = EecIcons.reports,
-                    actionLabel = "إضافة معاملة",
+                    actionLabel = appString(Res.string.action_add_transaction),
                     onAction = onAdd,
                 )
             }
@@ -93,6 +120,16 @@ fun ReportsScreen(
         onCopy = { onEvent(ReportsEvent.CopyText) },
         onShareText = { onEvent(ReportsEvent.ShareText) },
         onExportCsv = { onEvent(ReportsEvent.ExportCsv) },
+        title = appString(Res.string.share_title),
+        copyLabel = appString(Res.string.share_copy),
+        shareTextLabel = appString(Res.string.share_text),
+        exportCsvLabel = appString(Res.string.share_export_csv),
+        closeLabel = appString(Res.string.action_close),
+        whatsAppLabel = appString(Res.string.share_whatsapp),
+        telegramLabel = appString(Res.string.share_telegram),
+        emailLabel = appString(Res.string.share_email),
+        emailNote = appString(Res.string.share_email_note),
+        filesUnavailableMessage = appString(Res.string.share_files_unavailable),
         onWhatsApp = { onEvent(ReportsEvent.ShareWhatsApp) },
         onTelegram = { onEvent(ReportsEvent.ShareTelegram) },
         onEmail = { onEvent(ReportsEvent.ShareEmail) },
@@ -124,11 +161,11 @@ private fun ReportsContent(
         }
         item { SummaryStats(snapshot = snapshot) }
         item { AverageRow(snapshot = snapshot) }
-        item { SectionHeader(title = "أعلى التصنيفات") }
+        item { SectionHeader(title = appString(Res.string.section_top_categories)) }
         if (snapshot.topCategories.isEmpty()) {
             item {
                 Text(
-                    text = "لا توجد مصروفات مسجلة هذا الشهر.",
+                    text = appString(Res.string.no_expenses_this_month),
                     style = EecTheme.typography.body,
                     color = EecTheme.colors.onSurfaceVariant,
                 )
@@ -139,16 +176,20 @@ private fun ReportsContent(
                 CategoryShareRow(category = snapshot.topCategories[index])
             }
         }
-        item { SectionHeader(title = "مشاركة التقرير") }
+        item { SectionHeader(title = appString(Res.string.section_share_report)) }
         item {
             Column(verticalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs)) {
                 PrimaryButton(
-                    text = "معاينة ومشاركة",
+                    text = appString(Res.string.action_preview_share),
                     onClick = { onEvent(ReportsEvent.OpenShare) },
                     modifier = Modifier.fillMaxWidth(),
                 )
                 SecondaryButton(
-                    text = if (state.exporting) "جارٍ تجهيز CSV" else "تصدير الشهر CSV",
+                    text = if (state.exporting) {
+                        appString(Res.string.exporting_csv)
+                    } else {
+                        appString(Res.string.action_export_month_csv)
+                    },
                     onClick = { onEvent(ReportsEvent.ExportCsv) },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !state.exporting,
@@ -167,7 +208,7 @@ private fun AverageRow(snapshot: ReportSnapshot) {
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(
-            text = "معدل المصروف اليومي",
+            text = appString(Res.string.average_daily_spend),
             style = EecTheme.typography.body,
             color = EecTheme.colors.onSurfaceVariant,
         )

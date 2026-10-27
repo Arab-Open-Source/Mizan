@@ -24,3 +24,17 @@
 - AppScreenModel owns the session lock state (lockEnabled, locked, pinError) and compares the entered PIN with the hash loaded at Start. SettingsScreenModel owns enable/change/disable and calls PinLock.hash/verify itself, then reports the new state through onLockChanged.
 - The lock dialog has three modes (enable, change, disable) rather than separate screens. Disable requires the current PIN; change requires current, new, and confirmation; enable requires new and confirmation.
 - PIN fields use PasswordVisualTransformation with the NumberPassword keyboard, and LockScreen clears the field after every attempt so a retry starts clean.
+- Localization overrides the locked Arabic-only assumption: seven languages ship with direction chosen per language, RTL for Arabic, Dari, and Pashto and LTR for English, French, Italian, and German.
+- Afghan is represented as two languages, Dari (fa) and Pashto (ps), both RTL; a single "Afghan" option cannot serve either language's strings or script.
+- In-app language selection uses the project LocalAppLocale composition local plus expect/actual applyPlatformLocale, keeping Compose resources, LocalLayoutDirection, the JVM default Locale, and the Wasm document lang/dir in sync without a restart.
+- values/ stays Arabic rather than moving to English, so an untranslated key falls back to the product's default language and never to English.
+- The share-text template stays in core and is localized through injected strings from composeApp, keeping core free of Compose resources while one format path serves every language.
+- Seed category display names are resolved from stable slug ids at read time, so stored rows never depend on the Arabic seed name and re-seeding or translating names stays idempotent.
+- Money formatting is invariant across locales: Latin digits, comma group separators, dot decimals, and EGP in all seven languages; only labels and dates change with the language.
+- Transaction row polish keeps one shared row for dashboard recent activity and the transactions list: title, one-line subtitle, optional note, fixed-width amount, 48dp minimum height, and ellipsis.
+- Category color_key accepts a custom #RRGGBB value as well as one of the eight palette keys; the palette resolves a valid hex value first, so user colors survive theme changes while seeds keep stable token keys.
+- Vibrant card design replaces identical surface cards: expense, income, and net use dangerContainer, successContainer, and primaryContainer with matching accents and a 1dp outline, so kind is visible without reading the number.
+- Navigation adopts androidx.navigation:navigation-compose behind EecNavigator and Screen; screens never touch NavController, and one typed back stack serves JVM and Wasm.
+- PIN lock scope is the UI only: optional four-to-six digits, iterated salted hash under app_lock, checked at launch, no re-lock of the running session, no schema change, and no database encryption.
+- Project renamed from EEC to Mizan in user-facing docs, app name, and share text; BRIEF.md untouched per working agreement.
+- Project logo set to the supplied Mizan mark (composeResources/drawable/mizan_logo.png); used as desktop window icon and favicon.

@@ -14,6 +14,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import com.eec.app.localization.appString
+import com.eec.app.resources.Res
+import com.eec.app.resources.action_cancel
+import com.eec.app.resources.action_save
+import com.eec.app.resources.lock_action_disable
+import com.eec.app.resources.lock_action_enable
+import com.eec.app.resources.lock_change
+import com.eec.app.resources.lock_confirm_pin
+import com.eec.app.resources.lock_current_pin
+import com.eec.app.resources.lock_disable
+import com.eec.app.resources.lock_disabled_hint
+import com.eec.app.resources.lock_enable
+import com.eec.app.resources.lock_enabled_hint
+import com.eec.app.resources.lock_new_pin
+import com.eec.app.resources.saving
 import com.eec.design.component.EecTextField
 import com.eec.design.component.PrimaryButton
 import com.eec.design.component.SecondaryButton
@@ -37,29 +52,29 @@ internal fun LockSection(
         ) {
             Text(
                 text = if (state.lockEnabled) {
-                    "قفل التطبيق مفعّل. يُطلب الرمز في كل مرة يُفتح فيها التطبيق."
+                    appString(Res.string.lock_enabled_hint)
                 } else {
-                    "قفل التطبيق متوقف. فعّله لحماية بياناتك برمز من 4 إلى 6 أرقام."
+                    appString(Res.string.lock_disabled_hint)
                 },
                 style = EecTheme.typography.body,
                 color = EecTheme.colors.onSurfaceVariant,
             )
             if (state.lockEnabled) {
                 PrimaryButton(
-                    text = "تغيير رمز القفل",
+                    text = appString(Res.string.lock_change),
                     onClick = { onEvent(SettingsEvent.OpenLockDialog(LockMode.CHANGE)) },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = state.lockLoaded && !state.lockSaving,
                 )
                 SecondaryButton(
-                    text = "إيقاف قفل التطبيق",
+                    text = appString(Res.string.lock_disable),
                     onClick = { onEvent(SettingsEvent.OpenLockDialog(LockMode.DISABLE)) },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = state.lockLoaded && !state.lockSaving,
                 )
             } else {
                 PrimaryButton(
-                    text = "تفعيل قفل التطبيق",
+                    text = appString(Res.string.lock_enable),
                     onClick = { onEvent(SettingsEvent.OpenLockDialog(LockMode.ENABLE)) },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = state.lockLoaded && !state.lockSaving,
@@ -89,25 +104,25 @@ internal fun LockDialog(
                 if (draft.mode != LockMode.ENABLE) {
                     PinField(
                         value = draft.currentPin,
-                        label = "رمز القفل الحالي",
+                        label = appString(Res.string.lock_current_pin),
                         onValueChange = { onEvent(SettingsEvent.CurrentPinChanged(it)) },
                     )
                 }
                 if (draft.mode != LockMode.DISABLE) {
                     PinField(
                         value = draft.newPin,
-                        label = "رمز القفل الجديد",
+                        label = appString(Res.string.lock_new_pin),
                         onValueChange = { onEvent(SettingsEvent.NewPinChanged(it)) },
                     )
                     PinField(
                         value = draft.confirmPin,
-                        label = "تأكيد رمز القفل",
+                        label = appString(Res.string.lock_confirm_pin),
                         onValueChange = { onEvent(SettingsEvent.ConfirmPinChanged(it)) },
                     )
                 }
                 draft.error?.let { message ->
                     Text(
-                        text = message,
+                        text = appString(message),
                         style = EecTheme.typography.caption,
                         color = EecTheme.colors.danger,
                     )
@@ -120,7 +135,7 @@ internal fun LockDialog(
                 enabled = state.canSaveLock,
             ) {
                 Text(
-                    text = if (state.lockSaving) "جارٍ الحفظ" else lockConfirmLabel(draft.mode),
+                    text = if (state.lockSaving) appString(Res.string.saving) else lockConfirmLabel(draft.mode),
                     style = EecTheme.typography.bodyStrong,
                     color = EecTheme.colors.primary,
                 )
@@ -129,7 +144,7 @@ internal fun LockDialog(
         dismissButton = {
             TextButton(onClick = { onEvent(SettingsEvent.DismissLockDialog) }) {
                 Text(
-                    text = "إلغاء",
+                    text = appString(Res.string.action_cancel),
                     style = EecTheme.typography.bodyStrong,
                     color = EecTheme.colors.onSurfaceVariant,
                 )
@@ -157,14 +172,20 @@ private fun PinField(
     )
 }
 
-private fun lockTitle(mode: LockMode): String = when (mode) {
-    LockMode.ENABLE -> "تفعيل قفل التطبيق"
-    LockMode.CHANGE -> "تغيير رمز القفل"
-    LockMode.DISABLE -> "إيقاف قفل التطبيق"
-}
+@Composable
+private fun lockTitle(mode: LockMode): String = appString(
+    when (mode) {
+        LockMode.ENABLE -> Res.string.lock_enable
+        LockMode.CHANGE -> Res.string.lock_change
+        LockMode.DISABLE -> Res.string.lock_disable
+    },
+)
 
-private fun lockConfirmLabel(mode: LockMode): String = when (mode) {
-    LockMode.ENABLE -> "تفعيل"
-    LockMode.CHANGE -> "حفظ"
-    LockMode.DISABLE -> "إيقاف"
-}
+@Composable
+private fun lockConfirmLabel(mode: LockMode): String = appString(
+    when (mode) {
+        LockMode.ENABLE -> Res.string.lock_action_enable
+        LockMode.CHANGE -> Res.string.action_save
+        LockMode.DISABLE -> Res.string.lock_action_disable
+    },
+)

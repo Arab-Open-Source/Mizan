@@ -49,7 +49,7 @@ fun TopBar(
     title: String,
     modifier: Modifier = Modifier,
     navigationIcon: ImageVector? = null,
-    navigationContentDescription: String = "رجوع",
+    navigationContentDescription: String? = null,
     onNavigationClick: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {

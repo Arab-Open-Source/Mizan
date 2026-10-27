@@ -21,6 +21,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.eec.app.localization.appString
+import com.eec.app.resources.Res
+import com.eec.app.resources.date_label
+import com.eec.app.resources.editor_no_categories
+import com.eec.app.resources.kind_expense
+import com.eec.app.resources.kind_income
+import com.eec.app.resources.note_label
+import com.eec.app.resources.section_category
+import com.eec.app.resources.section_payment
 import com.eec.app.ui.paymentMethodIcon
 import com.eec.app.ui.paymentMethodLabel
 import com.eec.app.ui.shortDateLabel
@@ -46,14 +55,14 @@ fun KindToggle(
         horizontalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs),
     ) {
         KindOption(
-            label = "مصروف",
+            label = appString(Res.string.kind_expense),
             selected = kind == TransactionKind.EXPENSE,
             color = EecTheme.colors.tertiary,
             onClick = { onKind(TransactionKind.EXPENSE) },
             modifier = Modifier.weight(1f),
         )
         KindOption(
-            label = "دخل",
+            label = appString(Res.string.kind_income),
             selected = kind == TransactionKind.INCOME,
             color = EecTheme.colors.success,
             onClick = { onKind(TransactionKind.INCOME) },
@@ -104,13 +113,13 @@ fun CategorySection(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs)) {
         Text(
-            text = "التصنيف",
+            text = appString(Res.string.section_category),
             style = EecTheme.typography.label,
             color = EecTheme.colors.onSurfaceVariant,
         )
         if (categories.isEmpty()) {
             Text(
-                text = "لا توجد تصنيفات متاحة لهذا النوع.",
+                text = appString(Res.string.editor_no_categories),
                 style = EecTheme.typography.caption,
                 color = EecTheme.colors.onSurfaceVariant,
             )
@@ -142,9 +151,10 @@ fun DetailsSection(
         DateField(
             value = shortDateLabel(state.date),
             onClick = { datePickerVisible = true },
+            label = appString(Res.string.date_label),
         )
         Text(
-            text = "طريقة الدفع",
+            text = appString(Res.string.section_payment),
             style = EecTheme.typography.label,
             color = EecTheme.colors.onSurfaceVariant,
         )
@@ -166,7 +176,7 @@ fun DetailsSection(
         EecTextField(
             value = state.note,
             onValueChange = { onEvent(TransactionEditorEvent.NoteChanged(it)) },
-            label = "ملاحظة",
+            label = appString(Res.string.note_label),
             singleLine = false,
             isError = !state.noteValid,
             supportingText = "${state.note.length}/$NOTE_MAX_LENGTH",

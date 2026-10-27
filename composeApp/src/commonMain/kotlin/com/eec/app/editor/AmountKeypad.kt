@@ -12,14 +12,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import com.eec.app.localization.appString
+import com.eec.app.resources.Res
+import com.eec.app.resources.keypad_delete
 import com.eec.design.theme.EecSizes
 import com.eec.design.theme.EecTheme
 
-private val keypadRows: List<List<String>> = listOf(
+private val keypadRows: List<List<String?>> = listOf(
     listOf("1", "2", "3"),
     listOf("4", "5", "6"),
     listOf("7", "8", "9"),
-    listOf(".", "0", "حذف"),
+    listOf(".", "0", null),
 )
 
 @Composable
@@ -28,6 +31,7 @@ fun AmountKeypad(
     onBackspace: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val deleteLabel = appString(Res.string.keypad_delete)
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs),
@@ -39,8 +43,8 @@ fun AmountKeypad(
             ) {
                 row.forEach { key ->
                     KeypadKey(
-                        label = key,
-                        onClick = { if (key == "حذف") onBackspace() else onKey(key) },
+                        label = key ?: deleteLabel,
+                        onClick = { if (key == null) onBackspace() else onKey(key) },
                         modifier = Modifier.weight(1f),
                     )
                 }

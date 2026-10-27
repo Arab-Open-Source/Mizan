@@ -10,7 +10,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -20,16 +19,24 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.eec.app.di.AppContainer
 import com.eec.app.editor.EditorTarget
+import com.eec.app.localization.LanguageMode
+import com.eec.app.localization.ProvideAppLocale
+import com.eec.app.localization.appString
 import com.eec.app.navigation.EecNavigator
 import com.eec.app.navigation.Screen
 import com.eec.app.navigation.rememberEecNavigator
+import com.eec.app.resources.Res
+import com.eec.app.resources.action_retry
+import com.eec.app.resources.fab_add_transaction
+import com.eec.app.resources.nav_back
+import com.eec.app.resources.startup_error_title
+import com.eec.app.resources.startup_loading
+import com.eec.app.resources.transaction_saved
 import com.eec.app.security.LockScreen
 import com.eec.core.db.AppDatabase
 import com.eec.core.model.TransactionListItem
@@ -66,14 +73,16 @@ fun App(database: AppDatabase) {
     LaunchedEffect(appModel) {
         appModel.onEvent(AppEvent.Start)
     }
-    LaunchedEffect(appState.message) {
-        val message = appState.message ?: return@LaunchedEffect
-        snackbarHostState.showSnackbar(message)
-        appModel.onEvent(AppEvent.MessageShown)
-    }
 
     EecTheme(darkTheme = darkTheme) {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+        ProvideAppLocale(appState.language) {
+            val appMessage = appState.message?.let { appString(it) }
+            LaunchedEffect(appState.message, appState.language) {
+                if (appMessage == null) return@LaunchedEffect
+                snackbarHostState.showSnackbar(appMessage)
+                appModel.onEvent(AppEvent.MessageShown)
+            }
+
             when {
                 appState.loading -> StartupLoading()
                 startupError != null -> StartupError(
@@ -83,7 +92,7 @@ fun App(database: AppDatabase) {
 
                 appState.locked -> AppScaffold(topBar = { TopBar(title = AppInfo.NAME) }) { padding ->
                     LockScreen(
-                        error = appState.pinError,
+                        error = appState.pinError?.let { appString(it) },
                         onUnlock = { appModel.onEvent(AppEvent.Unlock(it)) },
                         modifier = Modifier
                             .fillMaxSize()
@@ -92,13 +101,16 @@ fun App(database: AppDatabase) {
                 }
 
                 else -> {
+                    val transactionSaved = appString(Res.string.transaction_saved)
                     AppShell(
                         container = container,
                         current = current,
                         navigator = navigator,
                         theme = appState.theme,
+                        language = appState.language,
                         snackbarHostState = snackbarHostState,
                         onThemeChange = { appModel.onEvent(AppEvent.SetTheme(it)) },
+                        onLanguageChange = { appModel.onEvent(AppEvent.SetLanguage(it)) },
                         onLockChanged = { appModel.onEvent(AppEvent.LockChanged(it)) },
                         onAdd = { editorTarget = EditorTarget.Add },
                         onEdit = { editorTarget = EditorTarget.Edit(it) },
@@ -110,7 +122,7 @@ fun App(database: AppDatabase) {
                             onClose = { editorTarget = null },
                             onSaved = {
                                 editorTarget = null
-                                scope.launch { snackbarHostState.showSnackbar("تم حفظ المعاملة") }
+                                scope.launch { snackbarHostState.showSnackbar(transactionSaved) }
                             },
                         )
                     }
@@ -126,12 +138,15 @@ private fun AppShell(
     current: Screen,
     navigator: EecNavigator,
     theme: ThemeMode,
+    language: LanguageMode,
     snackbarHostState: SnackbarHostState,
     onThemeChange: (ThemeMode) -> Unit,
+    onLanguageChange: (LanguageMode) -> Unit,
     onLockChanged: (Boolean) -> Unit,
     onAdd: () -> Unit,
     onEdit: (TransactionListItem) -> Unit,
 ) {
+    val addTransactionLabel = appString(Res.string.fab_add_transaction)
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val useRail = maxWidth >= EecSizes.railBreakpoint
         AppScaffold(
@@ -139,7 +154,7 @@ private fun AppShell(
             bottomBar = {
                 if (!useRail) {
                     BottomBar(
-                        items = navigationItems,
+                        items = navigationItems(),
                         selectedKey = current.navigationKey(),
                         onSelect = { key -> navigator.select(navigationScreen(key)) },
                     )
@@ -155,7 +170,7 @@ private fun AppShell(
                     ) {
                         Icon(
                             imageVector = EecIcons.add,
-                            contentDescription = "إضافة معاملة",
+                            contentDescription = addTransactionLabel,
                         )
                     }
                 }
@@ -168,7 +183,7 @@ private fun AppShell(
             ) {
                 if (useRail) {
                     NavigationRail(
-                        items = navigationItems,
+                        items = navigationItems(),
                         selectedKey = current.navigationKey(),
                         onSelect = { key -> navigator.select(navigationScreen(key)) },
                     )
@@ -177,8 +192,10 @@ private fun AppShell(
                     navigator = navigator,
                     container = container,
                     theme = theme,
+                    language = language,
                     snackbarHostState = snackbarHostState,
                     onThemeChange = onThemeChange,
+                    onLanguageChange = onLanguageChange,
                     onLockChanged = onLockChanged,
                     onAdd = onAdd,
                     onEdit = onEdit,
@@ -196,8 +213,10 @@ private fun AppNavHost(
     navigator: EecNavigator,
     container: AppContainer,
     theme: ThemeMode,
+    language: LanguageMode,
     snackbarHostState: SnackbarHostState,
     onThemeChange: (ThemeMode) -> Unit,
+    onLanguageChange: (LanguageMode) -> Unit,
     onLockChanged: (Boolean) -> Unit,
     onAdd: () -> Unit,
     onEdit: (TransactionListItem) -> Unit,
@@ -235,6 +254,8 @@ private fun AppNavHost(
                 container = container,
                 theme = theme,
                 onThemeChange = onThemeChange,
+                language = language,
+                onLanguageChange = onLanguageChange,
                 onLockChanged = onLockChanged,
                 onOpenCategories = { navigator.push(Screen.Categories) },
                 snackbarHostState = snackbarHostState,
@@ -255,6 +276,7 @@ private fun AppTopBar(current: Screen, onBack: () -> Unit) {
     TopBar(
         title = current.title(),
         navigationIcon = if (isChild) EecIcons.back else null,
+        navigationContentDescription = appString(Res.string.nav_back),
         onNavigationClick = if (isChild) onBack else null,
     )
 }
@@ -268,7 +290,7 @@ private fun StartupLoading() {
                 .padding(padding),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            LoadingState(message = "جارٍ فتح البيانات")
+            LoadingState(message = appString(Res.string.startup_loading))
         }
     }
 }
@@ -283,8 +305,9 @@ private fun StartupError(message: String, onRetry: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             ErrorState(
-                title = "تعذر فتح البيانات",
+                title = appString(Res.string.startup_error_title),
                 message = message,
+                retryLabel = appString(Res.string.action_retry),
                 onRetry = onRetry,
             )
         }

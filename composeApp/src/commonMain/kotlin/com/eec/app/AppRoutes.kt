@@ -16,8 +16,17 @@ import com.eec.app.di.AppContainer
 import com.eec.app.editor.EditorTarget
 import com.eec.app.editor.TransactionEditor
 import com.eec.app.editor.TransactionEditorScreenModel
+import com.eec.app.localization.LanguageMode
+import com.eec.app.localization.appString
 import com.eec.app.navigation.Screen
 import com.eec.app.reports.ReportsScreen
+import com.eec.app.resources.Res
+import com.eec.app.resources.nav_dashboard
+import com.eec.app.resources.nav_reports
+import com.eec.app.resources.nav_settings
+import com.eec.app.resources.nav_transactions
+import com.eec.app.resources.screen_categories
+import com.eec.app.share.shareTextStrings
 import com.eec.app.reports.ReportsScreenModel
 import com.eec.app.settings.SettingsScreen
 import com.eec.app.settings.SettingsScreenModel
@@ -28,11 +37,28 @@ import com.eec.core.model.TransactionListItem
 import com.eec.design.component.NavigationItem
 import com.eec.design.icon.EecIcons
 
-val navigationItems: List<NavigationItem> = listOf(
-    NavigationItem(key = Screen.Dashboard.route, label = "الرئيسية", icon = EecIcons.dashboard),
-    NavigationItem(key = Screen.Transactions.route, label = "المعاملات", icon = EecIcons.transactions),
-    NavigationItem(key = Screen.Reports.route, label = "التقارير", icon = EecIcons.reports),
-    NavigationItem(key = Screen.Settings.route, label = "الإعدادات", icon = EecIcons.settings),
+@Composable
+fun navigationItems(): List<NavigationItem> = listOf(
+    NavigationItem(
+        key = Screen.Dashboard.route,
+        label = appString(Res.string.nav_dashboard),
+        icon = EecIcons.dashboard,
+    ),
+    NavigationItem(
+        key = Screen.Transactions.route,
+        label = appString(Res.string.nav_transactions),
+        icon = EecIcons.transactions,
+    ),
+    NavigationItem(
+        key = Screen.Reports.route,
+        label = appString(Res.string.nav_reports),
+        icon = EecIcons.reports,
+    ),
+    NavigationItem(
+        key = Screen.Settings.route,
+        label = appString(Res.string.nav_settings),
+        icon = EecIcons.settings,
+    ),
 )
 
 fun Screen.navigationKey(): String = when (this) {
@@ -43,12 +69,13 @@ fun Screen.navigationKey(): String = when (this) {
     Screen.Categories -> "settings"
 }
 
+@Composable
 fun Screen.title(): String = when (this) {
-    Screen.Dashboard -> "الرئيسية"
-    Screen.Transactions -> "المعاملات"
-    Screen.Reports -> "التقارير"
-    Screen.Settings -> "الإعدادات"
-    Screen.Categories -> "التصنيفات"
+    Screen.Dashboard -> appString(Res.string.nav_dashboard)
+    Screen.Transactions -> appString(Res.string.nav_transactions)
+    Screen.Reports -> appString(Res.string.nav_reports)
+    Screen.Settings -> appString(Res.string.nav_settings)
+    Screen.Categories -> appString(Res.string.screen_categories)
 }
 
 fun navigationScreen(key: String): Screen = when (key) {
@@ -104,7 +131,10 @@ fun ReportsRoute(
     onAdd: () -> Unit,
 ) {
     val scope = rememberScreenScope(container)
-    val model = remember(container) { ReportsScreenModel(container, scope) }
+    val shareStrings = shareTextStrings()
+    val model = remember(container, shareStrings) {
+        ReportsScreenModel(container, scope, shareStrings)
+    }
     val state by model.state.collectAsState()
     ReportsScreen(
         state = state,
@@ -121,6 +151,8 @@ fun SettingsRoute(
     container: AppContainer,
     theme: ThemeMode,
     onThemeChange: (ThemeMode) -> Unit,
+    language: LanguageMode,
+    onLanguageChange: (LanguageMode) -> Unit,
     onLockChanged: (Boolean) -> Unit,
     onOpenCategories: () -> Unit,
     snackbarHostState: SnackbarHostState,
@@ -134,8 +166,10 @@ fun SettingsRoute(
     SettingsScreen(
         state = state,
         theme = theme,
+        language = language,
         canShareFiles = container.shareService.canShareFiles(),
         onThemeChange = onThemeChange,
+        onLanguageChange = onLanguageChange,
         onOpenCategories = onOpenCategories,
         onEvent = model::onEvent,
         snackbarHostState = snackbarHostState,

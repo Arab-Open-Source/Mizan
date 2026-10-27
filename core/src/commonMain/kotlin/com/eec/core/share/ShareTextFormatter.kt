@@ -3,59 +3,59 @@ package com.eec.core.share
 import com.eec.core.format.AmountFormatter
 import com.eec.core.report.ReportSnapshot
 
-object ShareTextFormatter {
-    private val monthNames: List<String> = listOf(
-        "يناير",
-        "فبراير",
-        "مارس",
-        "أبريل",
-        "مايو",
-        "يونيو",
-        "يوليو",
-        "أغسطس",
-        "سبتمبر",
-        "أكتوبر",
-        "نوفمبر",
-        "ديسمبر",
-    )
-
+class ShareTextFormatter(
+    private val strings: ShareTextStrings,
+) {
     fun format(snapshot: ReportSnapshot): String {
         val period = snapshot.period
         val categories = if (snapshot.topCategories.isEmpty()) {
-            "لا توجد"
+            strings.noCategories
         } else {
-            snapshot.topCategories.joinToString(separator = "، ") { category ->
+            snapshot.topCategories.joinToString(separator = "${strings.listSeparator} ") { category ->
                 "${category.name} ${category.sharePercent}%"
             }
         }
         return buildString {
-            append("EEC — تقرير ")
-            append(monthNames[period.monthNumber - 1])
+            append(strings.title)
+            append(' ')
+            append(monthName(period.monthNumber))
             append(' ')
             append(period.year)
             append('\n')
-            append("الفترة: ")
+            append(strings.periodLabel)
+            append(' ')
             append(period.firstDay)
-            append(" إلى ")
+            append(' ')
+            append(strings.rangeSeparator)
+            append(' ')
             append(period.lastDay)
             append('\n')
-            append("المصروف: ")
+            append(strings.expenseLabel)
+            append(' ')
             append(AmountFormatter.format(snapshot.totals.expense.minor))
-            append(" ج.م")
+            append(' ')
+            append(strings.currency)
             append('\n')
-            append("الدخل: ")
+            append(strings.incomeLabel)
+            append(' ')
             append(AmountFormatter.format(snapshot.totals.income.minor))
-            append(" ج.م")
+            append(' ')
+            append(strings.currency)
             append('\n')
-            append("الصافي: ")
+            append(strings.netLabel)
+            append(' ')
             append(AmountFormatter.format(snapshot.net.minor))
-            append(" ج.م")
+            append(' ')
+            append(strings.currency)
             append('\n')
-            append("أعلى التصنيفات: ")
+            append(strings.topCategoriesLabel)
+            append(' ')
             append(categories)
         }
     }
 
     fun subject(snapshot: ReportSnapshot): String =
-        "EEC — تقرير ${monthNames[snapshot.period.monthNumber - 1]} ${snapshot.period.year}"
+        "${strings.title} ${monthName(snapshot.period.monthNumber)} ${snapshot.period.year}"
+
+    private fun monthName(monthNumber: Int): String = strings.monthNames[monthNumber - 1]
 }

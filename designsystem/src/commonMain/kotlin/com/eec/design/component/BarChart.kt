@@ -49,15 +49,14 @@ data class BarChartPoint(
 @Composable
 fun BarChart(
     points: List<BarChartPoint>,
+    totalDescription: String,
     modifier: Modifier = Modifier,
     height: Dp = EecSizes.chartHeight,
-    contentDescription: String = "مخطط المصروف اليومي",
     barColor: Color = EecTheme.colors.primary,
     formatValue: (Long) -> String = { it.toString() },
 ) {
     if (points.isEmpty()) return
     var selectedIndex by remember(points) { mutableIntStateOf(NO_SELECTION) }
-    val totalLabel = points.sumOf { it.valueMinor }.let(formatValue)
     val selected = points.getOrNull(selectedIndex)
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
@@ -67,7 +66,7 @@ fun BarChart(
                 .height(height)
                 .semantics {
                     this.contentDescription = if (selected == null) {
-                        "$contentDescription، الإجمالي $totalLabel"
+                        totalDescription
                     } else {
                         "${selected.label}: ${formatValue(selected.valueMinor)}"
                     }

@@ -1,13 +1,18 @@
 package com.eec.app.transactions
 
 import com.eec.app.di.AppContainer
-import com.eec.app.ui.toUserMessage
+import com.eec.app.resources.Res
+import com.eec.app.resources.error_invalid_data
+import com.eec.app.resources.error_not_found
+import com.eec.app.resources.error_storage
+import com.eec.app.resources.transaction_deleted
 import com.eec.core.model.Category
 import com.eec.core.model.Money
 import com.eec.core.model.PaymentMethod
 import com.eec.core.model.TransactionFilter
 import com.eec.core.model.TransactionKind
 import com.eec.core.model.TransactionListItem
+import com.eec.core.repository.RepositoryError
 import com.eec.core.repository.WriteResult
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -23,6 +28,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
 
 data class TransactionsState(
     val search: String = "",
@@ -35,7 +41,7 @@ data class TransactionsState(
     val items: List<TransactionListItem> = emptyList(),
     val categories: List<Category> = emptyList(),
     val pendingDelete: TransactionListItem? = null,
-    val message: String? = null,
+    val message: StringResource? = null,
 ) {
     val hasFilters: Boolean
         get() = search.isNotBlank() || kind != null || categoryId != null || paymentMethod != null
@@ -162,15 +168,24 @@ class TransactionsScreenModel(
         scope.launch {
             try {
                 when (val result = container.transactions.delete(target.id)) {
-                    is WriteResult.Success -> _state.update { it.copy(message = "تم حذف المعاملة") }
+                    is WriteResult.Success -> _state.update {
+                        it.copy(message = Res.string.transaction_deleted)
+                    }
+
                     is WriteResult.Failure -> _state.update {
-                        it.copy(message = result.error.toUserMessage())
+                        it.copy(
+                            message = when (result.error) {
+                                is RepositoryError.Validation -> Res.string.error_invalid_data
+                                is RepositoryError.NotFound -> Res.string.error_not_found
+                                is RepositoryError.Storage -> Res.string.error_storage
+                            },
+                        )
                     }
                 }
             } catch (cancellation: CancellationException) {
                 throw cancellation
-            } catch (error: Exception) {
-                _state.update { it.copy(message = error.message ?: error.toString()) }
+            } catch (_: Exception) {
+                _state.update { it.copy(message = Res.string.error_storage) }
             }
         }
     }

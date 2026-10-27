@@ -22,6 +22,7 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.ui)
+            implementation(compose.components.resources)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
             implementation(libs.room.runtime)
@@ -47,4 +48,9 @@ compose.desktop {
     application {
         mainClass = "com.eec.app.MainKt"
     }
+}
+
+compose.resources {
+    publicResClass = true
+    packageOfResClass = "com.eec.app.resources"
 }

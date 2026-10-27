@@ -28,6 +28,40 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import com.eec.app.localization.appString
+import com.eec.app.resources.Res
+import com.eec.app.resources.action_archive
+import com.eec.app.resources.action_cancel
+import com.eec.app.resources.action_edit
+import com.eec.app.resources.action_new_category
+import com.eec.app.resources.action_restore
+import com.eec.app.resources.action_retry
+import com.eec.app.resources.action_save
+import com.eec.app.resources.categories_empty_message
+import com.eec.app.resources.categories_empty_title
+import com.eec.app.resources.categories_error_title
+import com.eec.app.resources.categories_loading
+import com.eec.app.resources.category_archived
+import com.eec.app.resources.category_color_label
+import com.eec.app.resources.category_edit_title
+import com.eec.app.resources.category_name_label
+import com.eec.app.resources.category_new_title
+import com.eec.app.resources.category_selected
+import com.eec.app.resources.color_brightness
+import com.eec.app.resources.color_gold
+import com.eec.app.resources.color_green
+import com.eec.app.resources.color_hex_label
+import com.eec.app.resources.color_hex_support
+import com.eec.app.resources.color_hue
+import com.eec.app.resources.color_olive
+import com.eec.app.resources.color_plum
+import com.eec.app.resources.color_preview
+import com.eec.app.resources.color_red
+import com.eec.app.resources.color_rust
+import com.eec.app.resources.color_saturation
+import com.eec.app.resources.color_slate
+import com.eec.app.resources.color_teal
+import com.eec.app.resources.saving
 import com.eec.app.ui.MaxWidthContent
 import com.eec.app.ui.transactionKindLabel
 import com.eec.core.model.Category
@@ -44,6 +78,7 @@ import com.eec.design.icon.EecIcons
 import com.eec.design.theme.CategoryColorKey
 import com.eec.design.theme.EecSizes
 import com.eec.design.theme.EecTheme
+import org.jetbrains.compose.resources.StringResource
 
 @Composable
 fun CategoryManagerScreen(
@@ -52,19 +87,21 @@ fun CategoryManagerScreen(
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
-    LaunchedEffect(state.message) {
-        val message = state.message ?: return@LaunchedEffect
+    val message = state.message?.let { appString(it) }
+    LaunchedEffect(message) {
+        if (message == null) return@LaunchedEffect
         snackbarHostState.showSnackbar(message)
         onEvent(CategoryManagerEvent.MessageShown)
     }
 
     MaxWidthContent(modifier) {
         when {
-            state.loading -> LoadingState(message = "جارٍ تحميل التصنيفات")
+            state.loading -> LoadingState(message = appString(Res.string.categories_loading))
             state.error != null -> ErrorState(
-                title = "تعذر تحميل التصنيفات",
+                title = appString(Res.string.categories_error_title),
                 message = state.error,
                 onRetry = { onEvent(CategoryManagerEvent.Retry) },
+                retryLabel = appString(Res.string.action_retry),
             )
 
             else -> CategoryManagerContent(state = state, onEvent = onEvent)
@@ -93,16 +130,16 @@ private fun CategoryManagerContent(
     ) {
         KindSelector(kind = state.kind, onEvent = onEvent)
         PrimaryButton(
-            text = "تصنيف جديد",
+            text = appString(Res.string.action_new_category),
             onClick = { onEvent(CategoryManagerEvent.NewCategory) },
             modifier = Modifier.fillMaxWidth(),
         )
         if (state.visible.isEmpty()) {
             EmptyState(
-                title = "لا توجد تصنيفات",
-                message = "أضف تصنيفًا لتنظيم معاملاتك.",
+                title = appString(Res.string.categories_empty_title),
+                message = appString(Res.string.categories_empty_message),
                 icon = EecIcons.transactions,
-                actionLabel = "تصنيف جديد",
+                actionLabel = appString(Res.string.action_new_category),
                 onAction = { onEvent(CategoryManagerEvent.NewCategory) },
             )
         } else {
@@ -170,7 +207,11 @@ private fun CategoryRow(category: Category, onClick: () -> Unit) {
                     maxLines = 1,
                 )
                 Text(
-                    text = if (category.archived) "مؤرشف" else transactionKindLabel(category.kind),
+                    text = if (category.archived) {
+                        appString(Res.string.category_archived)
+                    } else {
+                        transactionKindLabel(category.kind)
+                    },
                     style = EecTheme.typography.caption,
                     color = EecTheme.colors.onSurfaceVariant,
                 )
@@ -182,7 +223,7 @@ private fun CategoryRow(category: Category, onClick: () -> Unit) {
                 tint = color,
             )
             Text(
-                text = "تعديل",
+                text = appString(Res.string.action_edit),
                 style = EecTheme.typography.label,
                 color = EecTheme.colors.primary,
             )
@@ -194,14 +235,18 @@ private fun CategoryRow(category: Category, onClick: () -> Unit) {
 private fun CategoryEditorDialog(
     draft: CategoryDraft,
     saving: Boolean,
-    error: String?,
+    error: StringResource?,
     onEvent: (CategoryManagerEvent) -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = { onEvent(CategoryManagerEvent.DismissEditor) },
         title = {
             Text(
-                text = if (draft.id == null) "تصنيف جديد" else "تعديل التصنيف",
+                text = if (draft.id == null) {
+                    appString(Res.string.category_new_title)
+                } else {
+                    appString(Res.string.category_edit_title)
+                },
                 style = EecTheme.typography.title,
                 color = EecTheme.colors.onBackground,
             )
@@ -215,7 +260,7 @@ private fun CategoryEditorDialog(
                 enabled = draft.name.isNotBlank() && !saving,
             ) {
                 Text(
-                    text = if (saving) "جارٍ الحفظ" else "حفظ",
+                    text = if (saving) appString(Res.string.saving) else appString(Res.string.action_save),
                     style = EecTheme.typography.bodyStrong,
                     color = EecTheme.colors.primary,
                 )
@@ -230,7 +275,11 @@ private fun CategoryEditorDialog(
                         },
                     ) {
                         Text(
-                            text = if (draft.archived) "استعادة" else "أرشفة",
+                            text = if (draft.archived) {
+                                appString(Res.string.action_restore)
+                            } else {
+                                appString(Res.string.action_archive)
+                            },
                             style = EecTheme.typography.bodyStrong,
                             color = if (draft.archived) {
                                 EecTheme.colors.success
@@ -242,7 +291,7 @@ private fun CategoryEditorDialog(
                 }
                 TextButton(onClick = { onEvent(CategoryManagerEvent.DismissEditor) }) {
                     Text(
-                        text = "إلغاء",
+                        text = appString(Res.string.action_cancel),
                         style = EecTheme.typography.bodyStrong,
                         color = EecTheme.colors.onSurfaceVariant,
                     )
@@ -260,19 +309,20 @@ private fun CategoryEditorDialog(
 @Composable
 private fun CategoryEditorFields(
     draft: CategoryDraft,
-    error: String?,
+    error: StringResource?,
     onEvent: (CategoryManagerEvent) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(EecTheme.spacing.sm)) {
         EecTextField(
             value = draft.name,
             onValueChange = { onEvent(CategoryManagerEvent.NameChanged(it)) },
-            label = "اسم التصنيف",
+            label = appString(Res.string.category_name_label),
             isError = error != null,
-            supportingText = error ?: "${draft.name.length}/${CategoryRepository.NAME_MAX_LENGTH}",
+            supportingText = error?.let { appString(it) }
+                ?: "${draft.name.length}/${CategoryRepository.NAME_MAX_LENGTH}",
         )
         Text(
-            text = "اللون",
+            text = appString(Res.string.category_color_label),
             style = EecTheme.typography.label,
             color = EecTheme.colors.onSurfaceVariant,
         )
@@ -291,6 +341,12 @@ private fun CategoryEditorFields(
         ColorPicker(
             color = EecTheme.colors.categoryPalette.colorFor(draft.colorKey),
             onColorSelected = { onEvent(CategoryManagerEvent.ColorChanged(it)) },
+            hueLabel = appString(Res.string.color_hue),
+            saturationLabel = appString(Res.string.color_saturation),
+            brightnessLabel = appString(Res.string.color_brightness),
+            hexLabel = appString(Res.string.color_hex_label),
+            hexSupport = appString(Res.string.color_hex_support),
+            previewLabel = appString(Res.string.color_preview),
         )
     }
 }
@@ -301,13 +357,15 @@ private fun ColorSwatch(
     selected: Boolean,
     onSelect: () -> Unit,
 ) {
+    val label = colorLabel(key)
+    val selection = appString(Res.string.category_selected)
     Surface(
         onClick = onSelect,
         modifier = Modifier
             .size(EecSizes.minTouchTarget)
             .semantics {
-                contentDescription = colorLabel(key)
-                if (selected) stateDescription = "محدد"
+                contentDescription = label
+                if (selected) stateDescription = selection
             },
         shape = EecTheme.shapes.chip,
         color = EecTheme.colors.categoryPalette.colorFor(key),
@@ -318,13 +376,16 @@ private fun ColorSwatch(
     ) {}
 }
 
-private fun colorLabel(key: CategoryColorKey): String = when (key) {
-    CategoryColorKey.TEAL -> "فيروزي"
-    CategoryColorKey.GOLD -> "ذهبي"
-    CategoryColorKey.RUST -> "صدئ"
-    CategoryColorKey.GREEN -> "أخضر"
-    CategoryColorKey.RED -> "أحمر"
-    CategoryColorKey.SLATE -> "رمادي"
-    CategoryColorKey.PLUM -> "برقوقي"
-    CategoryColorKey.OLIVE -> "زيتوني"
-}
+@Composable
+private fun colorLabel(key: CategoryColorKey): String = appString(
+    when (key) {
+        CategoryColorKey.TEAL -> Res.string.color_teal
+        CategoryColorKey.GOLD -> Res.string.color_gold
+        CategoryColorKey.RUST -> Res.string.color_rust
+        CategoryColorKey.GREEN -> Res.string.color_green
+        CategoryColorKey.RED -> Res.string.color_red
+        CategoryColorKey.SLATE -> Res.string.color_slate
+        CategoryColorKey.PLUM -> Res.string.color_plum
+        CategoryColorKey.OLIVE -> Res.string.color_olive
+    },
+)

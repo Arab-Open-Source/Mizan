@@ -20,6 +20,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.eec.app.localization.appString
+import com.eec.app.resources.Res
+import com.eec.app.resources.action_close
+import com.eec.app.resources.action_retry
+import com.eec.app.resources.action_save
+import com.eec.app.resources.amount_label
+import com.eec.app.resources.amount_positive_error
+import com.eec.app.resources.currency_label
+import com.eec.app.resources.editor_error_categories
+import com.eec.app.resources.editor_loading_categories
+import com.eec.app.resources.editor_title_edit
+import com.eec.app.resources.editor_title_new
+import com.eec.app.resources.saving
 import com.eec.design.component.AmountField
 import com.eec.design.component.ErrorState
 import com.eec.design.component.FullWidthPrimaryButton
@@ -55,11 +68,12 @@ fun TransactionEditor(
             ) {
                 EditorHeader(isEditing = state.isEditing, onClose = onClose)
                 when {
-                    state.loading -> LoadingState(message = "جارٍ تحميل التصنيفات")
+                    state.loading -> LoadingState(message = appString(Res.string.editor_loading_categories))
                     state.categories.isEmpty() && state.error != null -> ErrorState(
-                        title = "تعذر تحميل التصنيفات",
-                        message = state.error,
+                        title = appString(Res.string.editor_error_categories),
+                        message = appString(state.error),
                         onRetry = { onEvent(TransactionEditorEvent.Retry) },
+                        retryLabel = appString(Res.string.action_retry),
                     )
 
                     else -> EditorForm(state = state, onEvent = onEvent)
@@ -77,14 +91,14 @@ private fun EditorHeader(isEditing: Boolean, onClose: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = if (isEditing) "تعديل المعاملة" else "معاملة جديدة",
+            text = if (isEditing) appString(Res.string.editor_title_edit) else appString(Res.string.editor_title_new),
             style = EecTheme.typography.title,
             color = EecTheme.colors.onBackground,
         )
         IconButton(onClick = onClose) {
             Icon(
                 imageVector = EecIcons.close,
-                contentDescription = "إغلاق",
+                contentDescription = appString(Res.string.action_close),
                 tint = EecTheme.colors.onBackground,
             )
         }
@@ -100,8 +114,10 @@ private fun EditorForm(
     AmountField(
         value = state.amountText,
         onValueChange = { onEvent(TransactionEditorEvent.AmountChanged(it)) },
+        label = appString(Res.string.amount_label),
+        currencyLabel = appString(Res.string.currency_label),
         isError = amountError,
-        supportingText = if (amountError) "أدخل مبلغًا أكبر من صفر" else null,
+        supportingText = if (amountError) appString(Res.string.amount_positive_error) else null,
     )
     AmountKeypad(
         onKey = { onEvent(TransactionEditorEvent.KeyPressed(it)) },
@@ -119,13 +135,13 @@ private fun EditorForm(
     DetailsSection(state = state, onEvent = onEvent)
     if (state.error != null) {
         Text(
-            text = state.error,
+            text = appString(state.error),
             style = EecTheme.typography.caption,
             color = EecTheme.colors.danger,
         )
     }
     FullWidthPrimaryButton(
-        text = if (state.saving) "جارٍ الحفظ" else "حفظ",
+        text = if (state.saving) appString(Res.string.saving) else appString(Res.string.action_save),
         onClick = { onEvent(TransactionEditorEvent.Save) },
         enabled = state.canSave,
     )

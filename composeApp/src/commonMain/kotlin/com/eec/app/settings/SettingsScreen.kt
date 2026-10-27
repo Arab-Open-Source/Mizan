@@ -19,6 +19,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.eec.app.AppInfo
 import com.eec.app.ThemeMode
+import com.eec.app.localization.LanguageMode
+import com.eec.app.localization.appString
+import com.eec.app.resources.Res
+import com.eec.app.resources.about_description
+import com.eec.app.resources.about_version
+import com.eec.app.resources.action_export_all
+import com.eec.app.resources.action_manage_categories
+import com.eec.app.resources.categories_hint
+import com.eec.app.resources.export_hint
+import com.eec.app.resources.export_unavailable
+import com.eec.app.resources.exporting_csv
+import com.eec.app.resources.language_description
+import com.eec.app.resources.section_about
+import com.eec.app.resources.section_categories
+import com.eec.app.resources.section_data
+import com.eec.app.resources.section_language
+import com.eec.app.resources.section_lock
+import com.eec.app.resources.section_theme
+import com.eec.app.resources.theme_dark
+import com.eec.app.resources.theme_light
+import com.eec.app.resources.theme_system
 import com.eec.app.ui.MaxWidthContent
 import com.eec.design.component.CategoryChip
 import com.eec.design.component.SecondaryButton
@@ -31,15 +52,18 @@ import com.eec.design.theme.EecTheme
 fun SettingsScreen(
     state: SettingsState,
     theme: ThemeMode,
+    language: LanguageMode,
     canShareFiles: Boolean,
     onThemeChange: (ThemeMode) -> Unit,
+    onLanguageChange: (LanguageMode) -> Unit,
     onOpenCategories: () -> Unit,
     onEvent: (SettingsEvent) -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
-    LaunchedEffect(state.message) {
-        val message = state.message ?: return@LaunchedEffect
+    val message = state.message?.let { appString(it) }
+    LaunchedEffect(message) {
+        if (message == null) return@LaunchedEffect
         snackbarHostState.showSnackbar(message)
         onEvent(SettingsEvent.MessageShown)
     }
@@ -55,7 +79,7 @@ fun SettingsScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(EecTheme.spacing.sm),
         ) {
-            item { SectionHeader(title = "المظهر") }
+            item { SectionHeader(title = appString(Res.string.section_theme)) }
             item {
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
@@ -72,34 +96,62 @@ fun SettingsScreen(
                     }
                 }
             }
-            item { SectionHeader(title = "القفل") }
-            item { LockSection(state = state, onEvent = onEvent) }
-            item { SectionHeader(title = "التصنيفات") }
-            item { CategoriesCard(onOpenCategories = onOpenCategories) }
-            item { SectionHeader(title = "البيانات") }
+            item { SectionHeader(title = appString(Res.string.section_language)) }
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs)) {
                     Text(
-                        text = "تصدير كل المعاملات إلى ملف CSV بترميز UTF-8.",
+                        text = appString(Res.string.language_description),
+                        style = EecTheme.typography.body,
+                        color = EecTheme.colors.onSurfaceVariant,
+                    )
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs),
+                        verticalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs),
+                    ) {
+                        LanguageMode.entries.forEach { mode ->
+                            CategoryChip(
+                                label = appString(mode.label),
+                                color = EecTheme.colors.primary,
+                                selected = language == mode,
+                                onClick = { onLanguageChange(mode) },
+                            )
+                        }
+                    }
+                }
+            }
+            item { SectionHeader(title = appString(Res.string.section_lock)) }
+            item { LockSection(state = state, onEvent = onEvent) }
+            item { SectionHeader(title = appString(Res.string.section_categories)) }
+            item { CategoriesCard(onOpenCategories = onOpenCategories) }
+            item { SectionHeader(title = appString(Res.string.section_data)) }
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs)) {
+                    Text(
+                        text = appString(Res.string.export_hint),
                         style = EecTheme.typography.body,
                         color = EecTheme.colors.onSurfaceVariant,
                     )
                     SecondaryButton(
-                        text = if (state.exporting) "جارٍ تجهيز CSV" else "تصدير كل المعاملات",
+                        text = if (state.exporting) {
+                            appString(Res.string.exporting_csv)
+                        } else {
+                            appString(Res.string.action_export_all)
+                        },
                         onClick = { onEvent(SettingsEvent.ExportAll) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = canShareFiles && !state.exporting,
                     )
                     if (!canShareFiles) {
                         Text(
-                            text = "تصدير الملفات غير متاح على هذا الجهاز.",
+                            text = appString(Res.string.export_unavailable),
                             style = EecTheme.typography.caption,
                             color = EecTheme.colors.onSurfaceVariant,
                         )
                     }
                 }
             }
-            item { SectionHeader(title = "حول") }
+            item { SectionHeader(title = appString(Res.string.section_about)) }
             item { AboutCard() }
         }
         state.lockDraft?.let { LockDialog(state = state, onEvent = onEvent) }
@@ -119,12 +171,12 @@ private fun CategoriesCard(onOpenCategories: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs),
         ) {
             Text(
-                text = "أضف تصنيفاتك أو أعد تسميتها أو غيّر ألوانها.",
+                text = appString(Res.string.categories_hint),
                 style = EecTheme.typography.body,
                 color = EecTheme.colors.onSurfaceVariant,
             )
             SecondaryButton(
-                text = "إدارة التصنيفات",
+                text = appString(Res.string.action_manage_categories),
                 onClick = onOpenCategories,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -152,12 +204,12 @@ private fun AboutCard() {
                 color = EecTheme.colors.onBackground,
             )
             Text(
-                text = "الإصدار ${AppInfo.VERSION} · ${AppInfo.MILESTONE}",
+                text = appString(Res.string.about_version, AppInfo.VERSION, AppInfo.MILESTONE),
                 style = EecTheme.typography.label,
                 color = EecTheme.colors.onSurfaceVariant,
             )
             Text(
-                text = "متعقب مصروفات شخصي يعمل دون شبكة، بالعربية ومن اليمين إلى اليسار.",
+                text = appString(Res.string.about_description),
                 style = EecTheme.typography.body,
                 color = EecTheme.colors.onSurfaceVariant,
             )
@@ -165,8 +217,11 @@ private fun AboutCard() {
     }
 }
 
-private fun themeLabel(mode: ThemeMode): String = when (mode) {
-    ThemeMode.SYSTEM -> "النظام"
-    ThemeMode.LIGHT -> "فاتح"
-    ThemeMode.DARK -> "داكن"
-}
+@Composable
+private fun themeLabel(mode: ThemeMode): String = appString(
+    when (mode) {
+        ThemeMode.SYSTEM -> Res.string.theme_system
+        ThemeMode.LIGHT -> Res.string.theme_light
+        ThemeMode.DARK -> Res.string.theme_dark
+    },
+)

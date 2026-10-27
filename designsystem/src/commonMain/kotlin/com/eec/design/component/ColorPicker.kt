@@ -29,6 +29,12 @@ import com.eec.design.theme.HsvColor
 fun ColorPicker(
     color: Color,
     onColorSelected: (String) -> Unit,
+    hueLabel: String,
+    saturationLabel: String,
+    brightnessLabel: String,
+    hexLabel: String,
+    hexSupport: String,
+    previewLabel: String,
     modifier: Modifier = Modifier,
 ) {
     var hsv by remember { mutableStateOf(ColorHex.toHsv(color)) }
@@ -50,21 +56,21 @@ fun ColorPicker(
     }
 
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs)) {
-        ColorPreview(color = ColorHex.toColor(hsv), hex = hexText)
+        ColorPreview(color = ColorHex.toColor(hsv), hex = hexText, label = previewLabel)
         HsvSlider(
-            label = "تدرج اللون",
+            label = hueLabel,
             value = hsv.hue,
             range = 0f..HUE_MAX,
             display = "${hsv.hue.toInt()}°",
         ) { emit(hsv.copy(hue = it)) }
         HsvSlider(
-            label = "التشبع",
+            label = saturationLabel,
             value = hsv.saturation,
             range = 0f..1f,
             display = "${(hsv.saturation * PERCENT).toInt()}%",
         ) { emit(hsv.copy(saturation = it)) }
         HsvSlider(
-            label = "السطوع",
+            label = brightnessLabel,
             value = hsv.value,
             range = 0f..1f,
             display = "${(hsv.value * PERCENT).toInt()}%",
@@ -78,16 +84,16 @@ fun ColorPicker(
                     onColorSelected(ColorHex.format(parsed))
                 }
             },
-            label = "قيمة اللون",
+            label = hexLabel,
             placeholder = "#0E7C6B",
             isError = ColorHex.parse(hexText) == null,
-            supportingText = "ستة أرقام سداسية عشرية",
+            supportingText = hexSupport,
         )
     }
 }
 
 @Composable
-private fun ColorPreview(color: Color, hex: String) {
+private fun ColorPreview(color: Color, hex: String, label: String) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = EecTheme.shapes.card,
@@ -99,7 +105,7 @@ private fun ColorPreview(color: Color, hex: String) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "معاينة اللون",
+                text = label,
                 style = EecTheme.typography.bodyStrong,
                 color = ColorHex.onColorFor(color),
             )

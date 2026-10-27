@@ -9,6 +9,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.eec.app.localization.appString
+import com.eec.app.resources.Res
+import com.eec.app.resources.delta_down
+import com.eec.app.resources.delta_none
+import com.eec.app.resources.delta_up
+import com.eec.app.resources.summary_expense
+import com.eec.app.resources.summary_income
+import com.eec.app.resources.summary_net
 import com.eec.core.format.AmountFormatter
 import com.eec.core.model.Money
 import com.eec.core.report.ReportSnapshot
@@ -23,21 +31,21 @@ fun SummaryStats(
 ) {
     val cards = listOf(
         StatCardData(
-            label = "المصروف",
+            label = appString(Res.string.summary_expense),
             value = AmountFormatter.format(snapshot.totals.expense.minor),
             supporting = if (showDelta) deltaLabel(snapshot.expenseDelta) else null,
             accent = EecTheme.colors.danger,
             containerColor = EecTheme.colors.dangerContainer,
         ),
         StatCardData(
-            label = "الدخل",
+            label = appString(Res.string.summary_income),
             value = AmountFormatter.format(snapshot.totals.income.minor),
             supporting = if (showDelta) deltaLabel(snapshot.incomeDelta) else null,
             accent = EecTheme.colors.success,
             containerColor = EecTheme.colors.successContainer,
         ),
         StatCardData(
-            label = "الصافي",
+            label = appString(Res.string.summary_net),
             value = AmountFormatter.format(snapshot.net.minor),
             supporting = null,
             accent = EecTheme.colors.primary,
@@ -57,10 +65,11 @@ fun SummaryStats(
     }
 }
 
+@Composable
 fun deltaLabel(delta: Money): String = when {
-    delta.isZero -> "بدون تغيير عن الشهر السابق"
-    delta.isPositive -> "أعلى بمقدار ${AmountFormatter.format(delta.minor)}"
-    else -> "أقل بمقدار ${AmountFormatter.format(delta.absolute().minor)}"
+    delta.isZero -> appString(Res.string.delta_none)
+    delta.isPositive -> appString(Res.string.delta_up, AmountFormatter.format(delta.minor))
+    else -> appString(Res.string.delta_down, AmountFormatter.format(delta.absolute().minor))
 }
 
 @Composable

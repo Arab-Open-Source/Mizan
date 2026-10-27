@@ -10,6 +10,7 @@ enum class SettingKey(val storageKey: String) {
     LAST_SELECTED_MONTH("last_selected_month"),
     ONBOARDING("onboarding"),
     APP_LOCK("app_lock"),
+    LANGUAGE("language"),
 }
 
 class SettingsRepository(database: AppDatabase) {

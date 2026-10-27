@@ -7,6 +7,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import com.eec.app.localization.appString
+import com.eec.app.resources.Res
+import com.eec.app.resources.action_cancel
+import com.eec.app.resources.action_confirm
 import com.eec.design.theme.EecTheme
 import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
@@ -40,12 +44,12 @@ fun EditorDatePicker(
                     onDismiss()
                 },
             ) {
-                Text(text = "تأكيد", style = EecTheme.typography.bodyStrong)
+                Text(text = appString(Res.string.action_confirm), style = EecTheme.typography.bodyStrong)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(text = "إلغاء", style = EecTheme.typography.bodyStrong)
+                Text(text = appString(Res.string.action_cancel), style = EecTheme.typography.bodyStrong)
             }
         },
         shape = EecTheme.shapes.dialog,

@@ -1,6 +1,11 @@
 package com.eec.app.reports
 
 import com.eec.app.di.AppContainer
+import com.eec.app.resources.Res
+import com.eec.app.resources.csv_ready
+import com.eec.app.resources.error_storage
+import com.eec.app.resources.report_copied
+import com.eec.app.resources.share_ready
 import com.eec.app.share.toCsvBytes
 import com.eec.core.model.MonthPeriod
 import com.eec.core.model.TransactionKind
@@ -9,6 +14,7 @@ import com.eec.core.report.MonthlyReportBuilder
 import com.eec.core.report.ReportSnapshot
 import com.eec.core.share.ShareLinks
 import com.eec.core.share.ShareTextFormatter
+import com.eec.core.share.ShareTextStrings
 import com.eec.core.time.endExclusiveInstant
 import com.eec.core.time.startInstant
 import com.eec.core.time.toCairoDate
@@ -21,6 +27,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
 
 data class ReportsState(
     val period: MonthPeriod,
@@ -30,7 +37,7 @@ data class ReportsState(
     val shareVisible: Boolean = false,
     val shareText: String = "",
     val exporting: Boolean = false,
-    val message: String? = null,
+    val message: StringResource? = null,
 ) {
     val isEmpty: Boolean
         get() = snapshot != null && snapshot.totals.expense.isZero && snapshot.totals.income.isZero
@@ -65,7 +72,9 @@ sealed interface ReportsEvent {
 class ReportsScreenModel(
     private val container: AppContainer,
     private val scope: CoroutineScope,
+    shareStrings: ShareTextStrings,
 ) {
+    private val shareFormatter = ShareTextFormatter(shareStrings)
     private val period = MutableStateFlow(MonthPeriod.from(container.clock.now().toCairoDate()))
     private val retryToken = MutableStateFlow(0)
 
@@ -126,7 +135,7 @@ class ReportsScreenModel(
                     loading = false,
                     error = null,
                     snapshot = snapshot,
-                    shareText = ShareTextFormatter.format(snapshot),
+                    shareText = shareFormatter.format(snapshot),
                 )
             }
         } catch (cancellation: CancellationException) {
@@ -139,8 +148,8 @@ class ReportsScreenModel(
     }
 
     private fun shareSubject(): String {
-        val snapshot = _state.value.snapshot ?: return "EEC"
-        return ShareTextFormatter.subject(snapshot)
+        val snapshot = _state.value.snapshot ?: return "Mizan"
+        return shareFormatter.subject(snapshot)
     }
 
     private fun copyText() {
@@ -149,11 +158,11 @@ class ReportsScreenModel(
         scope.launch {
             try {
                 container.shareService.copyText(text)
-                _state.update { it.copy(message = "تم نسخ نص التقرير") }
+                _state.update { it.copy(message = Res.string.report_copied) }
             } catch (cancellation: CancellationException) {
                 throw cancellation
-            } catch (error: Exception) {
-                _state.update { it.copy(message = error.message ?: error.toString()) }
+            } catch (_: Exception) {
+                _state.update { it.copy(message = Res.string.error_storage) }
             }
         }
     }
@@ -164,11 +173,11 @@ class ReportsScreenModel(
         scope.launch {
             try {
                 container.shareService.shareText(state.shareText, shareSubject())
-                _state.update { it.copy(message = "تم تجهيز المشاركة") }
+                _state.update { it.copy(message = Res.string.share_ready) }
             } catch (cancellation: CancellationException) {
                 throw cancellation
-            } catch (error: Exception) {
-                _state.update { it.copy(message = error.message ?: error.toString()) }
+            } catch (_: Exception) {
+                _state.update { it.copy(message = Res.string.error_storage) }
             }
         }
     }
@@ -179,8 +188,8 @@ class ReportsScreenModel(
                 container.shareService.openLink(url)
             } catch (cancellation: CancellationException) {
                 throw cancellation
-            } catch (error: Exception) {
-                _state.update { it.copy(message = error.message ?: error.toString()) }
+            } catch (_: Exception) {
+                _state.update { it.copy(message = Res.string.error_storage) }
             }
         }
     }
@@ -198,13 +207,11 @@ class ReportsScreenModel(
                 val bytes = rows.toCsvBytes()
                 val fileName = CsvExporter.fileName(container.clock.now().toCairoDate())
                 container.shareService.shareFile(bytes, fileName, CSV_MIME_TYPE)
-                _state.update { it.copy(exporting = false, message = "تم تجهيز ملف CSV") }
+                _state.update { it.copy(exporting = false, message = Res.string.csv_ready) }
             } catch (cancellation: CancellationException) {
                 throw cancellation
-            } catch (error: Exception) {
-                _state.update {
-                    it.copy(exporting = false, message = error.message ?: error.toString())
-                }
+            } catch (_: Exception) {
+                _state.update { it.copy(exporting = false, message = Res.string.error_storage) }
             }
         }
     }

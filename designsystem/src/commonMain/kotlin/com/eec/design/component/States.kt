@@ -63,8 +63,8 @@ fun ErrorState(
     title: String,
     message: String,
     onRetry: () -> Unit,
+    retryLabel: String,
     modifier: Modifier = Modifier,
-    retryLabel: String = "إعادة المحاولة",
 ) {
     Column(
         modifier = modifier

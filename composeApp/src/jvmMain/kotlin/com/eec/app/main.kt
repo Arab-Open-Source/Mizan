@@ -9,7 +9,7 @@ import java.nio.file.Path
 fun main() {
     val database = createDatabase(Path.of(AppDatabase.NAME))
     application {
-        Window(onCloseRequest = ::exitApplication, title = "EEC") {
+        Window(onCloseRequest = ::exitApplication, title = "Mizan") {
             App(database)
         }
     }

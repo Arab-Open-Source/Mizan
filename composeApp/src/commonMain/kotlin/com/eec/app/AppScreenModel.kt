@@ -1,6 +1,11 @@
 package com.eec.app
 
 import com.eec.app.di.AppContainer
+import com.eec.app.localization.LanguageMode
+import com.eec.app.resources.Res
+import com.eec.app.resources.error_storage
+import com.eec.app.resources.pin_error_incorrect
+import com.eec.app.resources.theme_save_failed
 import com.eec.core.repository.SettingKey
 import com.eec.core.repository.WriteResult
 import com.eec.core.security.PinLock
@@ -10,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
 
 enum class ThemeMode {
     SYSTEM,
@@ -27,16 +33,19 @@ data class AppState(
     val loading: Boolean = true,
     val error: String? = null,
     val theme: ThemeMode = ThemeMode.SYSTEM,
-    val message: String? = null,
+    val language: LanguageMode = LanguageMode.ARABIC,
+    val message: StringResource? = null,
     val lockEnabled: Boolean = false,
     val locked: Boolean = false,
-    val pinError: String? = null,
+    val pinError: StringResource? = null,
 )
 
 sealed interface AppEvent {
     data object Start : AppEvent
 
     data class SetTheme(val theme: ThemeMode) : AppEvent
+
+    data class SetLanguage(val language: LanguageMode) : AppEvent
 
     data class Unlock(val pin: String) : AppEvent
 
@@ -58,6 +67,7 @@ class AppScreenModel(
         when (event) {
             AppEvent.Start -> start()
             is AppEvent.SetTheme -> setTheme(event.theme)
+            is AppEvent.SetLanguage -> setLanguage(event.language)
             is AppEvent.Unlock -> unlock(event.pin)
             is AppEvent.LockChanged -> lockChanged(event.enabled)
             AppEvent.MessageShown -> _state.value = _state.value.copy(message = null)
@@ -70,11 +80,13 @@ class AppScreenModel(
             try {
                 container.prepare()
                 val theme = ThemeMode.fromStorage(container.settings.get(SettingKey.THEME))
+                val language = LanguageMode.fromStorage(container.settings.get(SettingKey.LANGUAGE))
                 storedPinHash = container.settings.get(SettingKey.APP_LOCK)?.takeIf { it.isNotBlank() }
                 val locked = storedPinHash != null
                 _state.value = _state.value.copy(
                     loading = false,
                     theme = theme,
+                    language = language,
                     lockEnabled = locked,
                     locked = locked,
                     pinError = null,
@@ -109,7 +121,7 @@ class AppScreenModel(
             val unlocked = PinLock.verify(pin, hash)
             _state.value = _state.value.copy(
                 locked = !unlocked,
-                pinError = if (unlocked) null else "رمز القفل غير صحيح. حاول مرة أخرى.",
+                pinError = if (unlocked) null else Res.string.pin_error_incorrect,
             )
         }
     }
@@ -123,7 +135,22 @@ class AppScreenModel(
                 is WriteResult.Success -> Unit
                 is WriteResult.Failure -> _state.value = _state.value.copy(
                     theme = previous,
-                    message = "تعذر حفظ المظهر",
+                    message = Res.string.theme_save_failed,
+                )
+            }
+        }
+    }
+
+    private fun setLanguage(language: LanguageMode) {
+        if (language == _state.value.language) return
+        val previous = _state.value.language
+        _state.value = _state.value.copy(language = language)
+        scope.launch {
+            when (val result = container.settings.put(SettingKey.LANGUAGE, language.name)) {
+                is WriteResult.Success -> Unit
+                is WriteResult.Failure -> _state.value = _state.value.copy(
+                    language = previous,
+                    message = Res.string.error_storage,
                 )
             }
         }

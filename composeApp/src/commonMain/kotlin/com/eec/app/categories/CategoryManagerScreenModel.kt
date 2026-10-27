@@ -1,6 +1,10 @@
 package com.eec.app.categories
 
 import com.eec.app.di.AppContainer
+import com.eec.app.resources.Res
+import com.eec.app.resources.category_archived_message
+import com.eec.app.resources.category_restored_message
+import com.eec.app.resources.category_saved
 import com.eec.app.ui.toUserMessage
 import com.eec.core.model.Category
 import com.eec.core.model.TransactionKind
@@ -14,6 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
 
 data class CategoryDraft(
     val id: String? = null,
@@ -30,8 +35,8 @@ data class CategoryManagerState(
     val error: String? = null,
     val draft: CategoryDraft? = null,
     val saving: Boolean = false,
-    val editorError: String? = null,
-    val message: String? = null,
+    val editorError: StringResource? = null,
+    val message: StringResource? = null,
 ) {
     val visible: List<Category>
         get() = categories.filter { it.kind == kind }.sortedBy { it.archived }
@@ -168,7 +173,7 @@ class CategoryManagerScreenModel(
             }
             when (result) {
                 is WriteResult.Success -> _state.update {
-                    it.copy(saving = false, draft = null, message = "تم حفظ التصنيف")
+                    it.copy(saving = false, draft = null, message = Res.string.category_saved)
                 }
 
                 is WriteResult.Failure -> _state.update {
@@ -184,7 +189,11 @@ class CategoryManagerScreenModel(
                 is WriteResult.Success -> _state.update { state ->
                     state.copy(
                         draft = state.draft?.takeUnless { it.id == id },
-                        message = if (archived) "تم أرشفة التصنيف" else "تم استعادة التصنيف",
+                        message = if (archived) {
+                            Res.string.category_archived_message
+                        } else {
+                            Res.string.category_restored_message
+                        },
                     )
                 }
 

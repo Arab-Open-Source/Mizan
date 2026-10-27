@@ -18,6 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.eec.app.AppInfo
+import com.eec.app.localization.appString
+import com.eec.app.resources.Res
+import com.eec.app.resources.action_unlock
+import com.eec.app.resources.app_lock_hint
+import com.eec.app.resources.app_lock_pin_label
+import com.eec.app.resources.app_lock_title
 import com.eec.core.security.PinLock
 import com.eec.design.component.EecTextField
 import com.eec.design.component.PrimaryButton
@@ -51,12 +57,12 @@ fun LockScreen(
                 color = EecTheme.colors.primary,
             )
             Text(
-                text = "قفل التطبيق",
+                text = appString(Res.string.app_lock_title),
                 style = EecTheme.typography.headline,
                 color = EecTheme.colors.onBackground,
             )
             Text(
-                text = "أدخل رمز القفل للمتابعة.",
+                text = appString(Res.string.app_lock_hint),
                 style = EecTheme.typography.body,
                 color = EecTheme.colors.onSurfaceVariant,
             )
@@ -66,14 +72,14 @@ fun LockScreen(
                     pin = raw.filter { it.isDigit() }.take(PinLock.MAX_LENGTH)
                     editing = true
                 },
-                label = "رمز القفل",
+                label = appString(Res.string.app_lock_pin_label),
                 isError = visibleError != null,
                 supportingText = visibleError,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                 visualTransformation = PasswordVisualTransformation(),
             )
             PrimaryButton(
-                text = "فتح",
+                text = appString(Res.string.action_unlock),
                 onClick = {
                     onUnlock(pin)
                     pin = ""

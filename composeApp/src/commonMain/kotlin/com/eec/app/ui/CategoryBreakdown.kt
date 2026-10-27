@@ -15,6 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.eec.app.localization.appString
+import com.eec.app.resources.Res
+import com.eec.app.resources.chart_category_description
+import com.eec.app.resources.chart_category_total
+import com.eec.app.resources.chart_total
 import com.eec.core.format.AmountFormatter
 import com.eec.core.report.CategoryShare
 import com.eec.design.component.DonutChart
@@ -35,6 +40,12 @@ fun CategoryDonutChart(
     }
     DonutChart(
         points = points,
+        totalLabel = appString(Res.string.chart_total),
+        totalDescription = appString(
+            Res.string.chart_category_total,
+            appString(Res.string.chart_category_description),
+            AmountFormatter.format(categories.sumOf { it.amount.minor }),
+        ),
         modifier = modifier,
         formatValue = { AmountFormatter.format(it) },
     )

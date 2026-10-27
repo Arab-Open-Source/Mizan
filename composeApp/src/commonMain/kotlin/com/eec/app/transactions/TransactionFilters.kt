@@ -8,6 +8,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.eec.app.localization.appString
+import com.eec.app.resources.Res
+import com.eec.app.resources.filter_all
+import com.eec.app.resources.filter_category
+import com.eec.app.resources.filter_clear
+import com.eec.app.resources.filter_kind
+import com.eec.app.resources.filter_payment
+import com.eec.app.resources.filter_transactions
 import com.eec.app.ui.paymentMethodLabel
 import com.eec.app.ui.transactionKindLabel
 import com.eec.core.model.PaymentMethod
@@ -26,16 +34,16 @@ fun TransactionFilterSheet(
     FilterSheet(
         visible = state.filtersVisible,
         onDismiss = { onEvent(TransactionsEvent.HideFilters) },
-        title = "تصفية المعاملات",
+        title = appString(Res.string.filter_transactions),
     ) {
-        FilterGroupTitle(text = "النوع")
+        FilterGroupTitle(text = appString(Res.string.filter_kind))
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs),
             verticalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs),
         ) {
             CategoryChip(
-                label = "الكل",
+                label = appString(Res.string.filter_all),
                 color = EecTheme.colors.primary,
                 selected = state.kind == null,
                 onClick = { onEvent(TransactionsEvent.KindChanged(null)) },
@@ -50,14 +58,14 @@ fun TransactionFilterSheet(
             }
         }
 
-        FilterGroupTitle(text = "التصنيف")
+        FilterGroupTitle(text = appString(Res.string.filter_category))
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs),
             verticalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs),
         ) {
             CategoryChip(
-                label = "الكل",
+                label = appString(Res.string.filter_all),
                 color = EecTheme.colors.primary,
                 selected = state.categoryId == null,
                 onClick = { onEvent(TransactionsEvent.CategoryChanged(null)) },
@@ -74,14 +82,14 @@ fun TransactionFilterSheet(
                 }
         }
 
-        FilterGroupTitle(text = "طريقة الدفع")
+        FilterGroupTitle(text = appString(Res.string.filter_payment))
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs),
             verticalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs),
         ) {
             CategoryChip(
-                label = "الكل",
+                label = appString(Res.string.filter_all),
                 color = EecTheme.colors.primary,
                 selected = state.paymentMethod == null,
                 onClick = { onEvent(TransactionsEvent.PaymentChanged(null)) },
@@ -98,7 +106,7 @@ fun TransactionFilterSheet(
 
         if (state.hasFilters) {
             SecondaryButton(
-                text = "مسح التصفية",
+                text = appString(Res.string.filter_clear),
                 onClick = { onEvent(TransactionsEvent.ClearFilters) },
                 modifier = Modifier.fillMaxWidth(),
             )

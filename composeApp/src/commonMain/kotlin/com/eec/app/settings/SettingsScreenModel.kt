@@ -1,6 +1,17 @@
 package com.eec.app.settings
 
 import com.eec.app.di.AppContainer
+import com.eec.app.resources.Res
+import com.eec.app.resources.csv_ready
+import com.eec.app.resources.error_storage
+import com.eec.app.resources.export_unavailable
+import com.eec.app.resources.lock_changed_message
+import com.eec.app.resources.lock_current_incorrect
+import com.eec.app.resources.lock_disabled_message
+import com.eec.app.resources.lock_enabled_message
+import com.eec.app.resources.lock_length_error
+import com.eec.app.resources.lock_mismatch
+import com.eec.app.resources.lock_read_failed
 import com.eec.app.share.toCsvBytes
 import com.eec.app.ui.toUserMessage
 import com.eec.core.report.CsvExporter
@@ -15,6 +26,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
 
 enum class LockMode {
     ENABLE,
@@ -27,12 +39,12 @@ data class LockDraft(
     val currentPin: String = "",
     val newPin: String = "",
     val confirmPin: String = "",
-    val error: String? = null,
+    val error: StringResource? = null,
 )
 
 data class SettingsState(
     val exporting: Boolean = false,
-    val message: String? = null,
+    val message: StringResource? = null,
     val lockLoaded: Boolean = false,
     val lockEnabled: Boolean = false,
     val lockDraft: LockDraft? = null,
@@ -107,7 +119,7 @@ class SettingsScreenModel(
             } catch (cancellation: CancellationException) {
                 throw cancellation
             } catch (error: Exception) {
-                _state.update { it.copy(lockLoaded = true, message = "تعذر قراءة إعداد القفل") }
+                _state.update { it.copy(lockLoaded = true, message = Res.string.lock_read_failed) }
             }
         }
     }
@@ -142,9 +154,9 @@ class SettingsScreenModel(
                     lockDraft = null,
                     lockEnabled = enabled,
                     message = when (draft.mode) {
-                        LockMode.ENABLE -> "تم تفعيل قفل التطبيق"
-                        LockMode.CHANGE -> "تم تغيير رمز القفل"
-                        LockMode.DISABLE -> "تم إيقاف قفل التطبيق"
+                        LockMode.ENABLE -> Res.string.lock_enabled_message
+                        LockMode.CHANGE -> Res.string.lock_changed_message
+                        LockMode.DISABLE -> Res.string.lock_disabled_message
                     },
                 )
             }
@@ -152,20 +164,24 @@ class SettingsScreenModel(
         }
     }
 
-    private suspend fun applyLockDraft(draft: LockDraft): String? = when (draft.mode) {
+    private suspend fun applyLockDraft(draft: LockDraft): StringResource? = when (draft.mode) {
         LockMode.ENABLE -> writeNewPin(draft)
         LockMode.CHANGE -> if (verifyStoredPin(draft.currentPin)) {
             writeNewPin(draft)
         } else {
-            CURRENT_PIN_ERROR
+            Res.string.lock_current_incorrect
         }
 
-        LockMode.DISABLE -> if (verifyStoredPin(draft.currentPin)) removePin() else CURRENT_PIN_ERROR
+        LockMode.DISABLE -> if (verifyStoredPin(draft.currentPin)) {
+            removePin()
+        } else {
+            Res.string.lock_current_incorrect
+        }
     }
 
-    private suspend fun writeNewPin(draft: LockDraft): String? {
-        if (!PinLock.isValidPin(draft.newPin)) return INVALID_PIN_ERROR
-        if (draft.newPin != draft.confirmPin) return MISMATCH_ERROR
+    private suspend fun writeNewPin(draft: LockDraft): StringResource? {
+        if (!PinLock.isValidPin(draft.newPin)) return Res.string.lock_length_error
+        if (draft.newPin != draft.confirmPin) return Res.string.lock_mismatch
         val hash = PinLock.hash(draft.newPin)
         return when (val result = container.settings.put(SettingKey.APP_LOCK, hash)) {
             is WriteResult.Success -> {
@@ -177,7 +193,7 @@ class SettingsScreenModel(
         }
     }
 
-    private suspend fun removePin(): String? =
+    private suspend fun removePin(): StringResource? =
         when (val result = container.settings.remove(SettingKey.APP_LOCK)) {
             is WriteResult.Success -> {
                 storedPinHash = null
@@ -201,28 +217,23 @@ class SettingsScreenModel(
             _state.update { it.copy(exporting = true, message = null) }
             try {
                 if (!container.shareService.canShareFiles()) {
-                    _state.update { it.copy(exporting = false, message = "تصدير الملفات غير متاح هنا") }
+                    _state.update { it.copy(exporting = false, message = Res.string.export_unavailable) }
                     return@launch
                 }
                 val rows = container.transactions.exportRows()
                 val bytes = rows.toCsvBytes()
                 val fileName = CsvExporter.fileName(container.clock.now().toCairoDate())
                 container.shareService.shareFile(bytes, fileName, CSV_MIME_TYPE)
-                _state.update { it.copy(exporting = false, message = "تم تجهيز ملف CSV") }
+                _state.update { it.copy(exporting = false, message = Res.string.csv_ready) }
             } catch (cancellation: CancellationException) {
                 throw cancellation
-            } catch (error: Exception) {
-                _state.update {
-                    it.copy(exporting = false, message = error.message ?: error.toString())
-                }
+            } catch (_: Exception) {
+                _state.update { it.copy(exporting = false, message = Res.string.error_storage) }
             }
         }
     }
 
     private companion object {
         const val CSV_MIME_TYPE: String = "text/csv"
-        const val CURRENT_PIN_ERROR: String = "رمز القفل الحالي غير صحيح"
-        const val INVALID_PIN_ERROR: String = "رمز القفل من 4 إلى 6 أرقام"
-        const val MISMATCH_ERROR: String = "الرمزان غير متطابقين"
     }
 }

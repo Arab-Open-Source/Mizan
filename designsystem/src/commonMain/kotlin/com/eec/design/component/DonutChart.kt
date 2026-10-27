@@ -43,11 +43,12 @@ data class DonutChartPoint(
 @Composable
 fun DonutChart(
     points: List<DonutChartPoint>,
+    totalLabel: String,
+    totalDescription: String,
     modifier: Modifier = Modifier,
     diameter: Dp = 200.dp,
     strokeWidth: Dp = 24.dp,
     formatValue: (Long) -> String = { it.toString() },
-    contentDescription: String = "توزيع المصروف حسب التصنيف",
 ) {
     if (points.isEmpty()) return
     val total = points.sumOf { it.valueMinor.coerceAtLeast(0L) }
@@ -64,7 +65,7 @@ fun DonutChart(
                 .size(diameter)
                 .semantics {
                     this.contentDescription = selected?.let { "${it.label}: ${formatValue(it.valueMinor)}" }
-                        ?: "$contentDescription، الإجمالي ${formatValue(total)}"
+                        ?: totalDescription
                 }
                 .pointerInput(points) {
                     detectTapGestures { position ->
@@ -89,7 +90,7 @@ fun DonutChart(
                 selectedIndex = selectedIndex,
             )
             DonutCenter(
-                label = selected?.label ?: "الإجمالي",
+                label = selected?.label ?: totalLabel,
                 value = formatValue(selected?.valueMinor ?: total),
                 supporting = selected?.let { "${sharePercent(it.valueMinor, total)}%" },
                 diameter = diameter,

@@ -78,9 +78,9 @@ fun EecTextField(
 fun AmountField(
     value: String,
     onValueChange: (String) -> Unit,
+    label: String,
+    currencyLabel: String,
     modifier: Modifier = Modifier,
-    label: String = "المبلغ",
-    currencyLabel: String = "ج.م",
     isError: Boolean = false,
     supportingText: String? = null,
 ) {
@@ -114,8 +114,8 @@ fun AmountField(
 fun DateField(
     value: String,
     onClick: () -> Unit,
+    label: String,
     modifier: Modifier = Modifier,
-    label: String = "التاريخ",
 ) {
     Surface(
         modifier = modifier

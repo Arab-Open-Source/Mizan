@@ -12,6 +12,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
+import com.eec.app.localization.appString
+import com.eec.app.resources.Res
+import com.eec.app.resources.month_next
+import com.eec.app.resources.month_previous
 import com.eec.core.model.MonthPeriod
 import com.eec.design.icon.EecIcons
 import com.eec.design.theme.EecTheme
@@ -31,7 +35,7 @@ fun MonthSwitcher(
         IconButton(onClick = onPrevious) {
             Icon(
                 imageVector = EecIcons.back,
-                contentDescription = "الشهر السابق",
+                contentDescription = appString(Res.string.month_previous),
                 modifier = Modifier.size(24.dp),
                 tint = EecTheme.colors.onBackground,
             )
@@ -44,7 +48,7 @@ fun MonthSwitcher(
         IconButton(onClick = onNext) {
             Icon(
                 imageVector = EecIcons.back,
-                contentDescription = "الشهر التالي",
+                contentDescription = appString(Res.string.month_next),
                 modifier = Modifier
                     .size(24.dp)
                     .rotate(180f),

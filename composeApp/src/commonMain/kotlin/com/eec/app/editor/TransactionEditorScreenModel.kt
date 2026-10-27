@@ -1,6 +1,8 @@
 package com.eec.app.editor
 
 import com.eec.app.di.AppContainer
+import com.eec.app.resources.Res
+import com.eec.app.resources.error_storage
 import com.eec.app.ui.toUserMessage
 import com.eec.core.format.AmountFormatter
 import com.eec.core.model.Money
@@ -20,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import org.jetbrains.compose.resources.StringResource
 
 const val NOTE_MAX_LENGTH: Int = 280
 
@@ -40,7 +43,7 @@ data class TransactionEditorState(
     val categories: List<com.eec.core.model.Category> = emptyList(),
     val loading: Boolean = true,
     val saving: Boolean = false,
-    val error: String? = null,
+    val error: StringResource? = null,
 ) {
     val isEditing: Boolean get() = target is EditorTarget.Edit
 
@@ -162,10 +165,8 @@ class TransactionEditorScreenModel(
                 }
             } catch (cancellation: CancellationException) {
                 throw cancellation
-            } catch (error: Exception) {
-                _state.update {
-                    it.copy(loading = false, error = error.message ?: error.toString())
-                }
+            } catch (_: Exception) {
+                _state.update { it.copy(loading = false, error = Res.string.error_storage) }
             }
         }
     }
@@ -192,8 +193,8 @@ class TransactionEditorScreenModel(
                 }
             } catch (cancellation: CancellationException) {
                 throw cancellation
-            } catch (error: Exception) {
-                _state.update { it.copy(error = error.message ?: error.toString()) }
+            } catch (_: Exception) {
+                _state.update { it.copy(error = Res.string.error_storage) }
             }
         }
     }
@@ -230,8 +231,8 @@ class TransactionEditorScreenModel(
                 }
             } catch (cancellation: CancellationException) {
                 throw cancellation
-            } catch (error: Exception) {
-                _state.update { it.copy(saving = false, error = error.message ?: error.toString()) }
+            } catch (_: Exception) {
+                _state.update { it.copy(saving = false, error = Res.string.error_storage) }
             }
         }
     }
