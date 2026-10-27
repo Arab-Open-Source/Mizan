@@ -17,12 +17,25 @@ import org.jetbrains.compose.resources.Font
 @Immutable
 data class EecTypography(
     val display: TextStyle,
+    val primaryBalance: TextStyle = display,
+    val secondaryMetric: TextStyle = display,
+    val pageTitle: TextStyle = display,
+    val sectionTitle: TextStyle = display,
+    val cardTitle: TextStyle = display,
     val headline: TextStyle,
     val title: TextStyle,
     val body: TextStyle,
     val bodyStrong: TextStyle,
+    val secondaryBody: TextStyle = body,
+    val formLabel: TextStyle = body,
+    val buttonLabel: TextStyle = body,
     val label: TextStyle,
     val caption: TextStyle,
+    val numericMetadata: TextStyle = caption,
+    val tableHeading: TextStyle = label,
+    val chartAnnotation: TextStyle = caption,
+    val helper: TextStyle = caption,
+    val error: TextStyle = helper,
 )
 
 @Composable
@@ -66,14 +79,35 @@ fun eecTypography(): EecTypography {
         fontFeatureSettings = "tnum",
     )
 
+    val display = style(size = 32, lineHeight = 40, weight = FontWeight.SemiBold)
+    val headline = style(size = 24, lineHeight = 32, weight = FontWeight.SemiBold)
+    val title = style(size = 18, lineHeight = 26, weight = FontWeight.SemiBold)
+    val body = style(size = 15, lineHeight = 24, weight = FontWeight.Normal)
+    val bodyStrong = style(size = 15, lineHeight = 24, weight = FontWeight.Medium)
+    val label = style(size = 13, lineHeight = 18, weight = FontWeight.Medium)
+    val caption = style(size = 12, lineHeight = 16, weight = FontWeight.Normal)
+
     return EecTypography(
-        display = style(size = 32, lineHeight = 40, weight = FontWeight.SemiBold),
-        headline = style(size = 24, lineHeight = 32, weight = FontWeight.SemiBold),
-        title = style(size = 18, lineHeight = 26, weight = FontWeight.SemiBold),
-        body = style(size = 15, lineHeight = 24, weight = FontWeight.Normal),
-        bodyStrong = style(size = 15, lineHeight = 24, weight = FontWeight.Medium),
-        label = style(size = 13, lineHeight = 18, weight = FontWeight.Medium),
-        caption = style(size = 12, lineHeight = 16, weight = FontWeight.Normal),
+        display = display,
+        primaryBalance = style(size = 36, lineHeight = 44, weight = FontWeight.Bold),
+        secondaryMetric = style(size = 20, lineHeight = 28, weight = FontWeight.SemiBold),
+        pageTitle = style(size = 22, lineHeight = 30, weight = FontWeight.SemiBold),
+        sectionTitle = style(size = 18, lineHeight = 26, weight = FontWeight.SemiBold),
+        cardTitle = style(size = 16, lineHeight = 24, weight = FontWeight.SemiBold),
+        headline = headline,
+        title = title,
+        body = body,
+        bodyStrong = bodyStrong,
+        secondaryBody = style(size = 14, lineHeight = 22, weight = FontWeight.Normal),
+        formLabel = style(size = 13, lineHeight = 18, weight = FontWeight.Medium),
+        buttonLabel = style(size = 14, lineHeight = 20, weight = FontWeight.Medium),
+        label = label,
+        caption = caption,
+        numericMetadata = style(size = 12, lineHeight = 16, weight = FontWeight.Medium),
+        tableHeading = style(size = 12, lineHeight = 16, weight = FontWeight.SemiBold),
+        chartAnnotation = style(size = 11, lineHeight = 14, weight = FontWeight.Normal),
+        helper = style(size = 12, lineHeight = 16, weight = FontWeight.Normal),
+        error = style(size = 12, lineHeight = 16, weight = FontWeight.Medium),
     )
 }
 

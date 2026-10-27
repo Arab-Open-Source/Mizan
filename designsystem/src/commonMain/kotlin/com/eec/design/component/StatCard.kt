@@ -47,7 +47,7 @@ fun StatCard(
             Text(
                 text = label,
                 style = EecTheme.typography.label,
-                color = accent,
+                color = EecTheme.colors.onSurfaceVariant,
             )
             Text(
                 text = value,

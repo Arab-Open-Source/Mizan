@@ -58,7 +58,7 @@ fun TopBar(
             Text(
                 text = title,
                 style = EecTheme.typography.title,
-                color = EecTheme.colors.primary,
+                color = EecTheme.colors.onBackground,
             )
         },
         modifier = modifier,

@@ -59,6 +59,7 @@ import com.eec.design.component.EmptyState
 import com.eec.design.component.ErrorState
 import com.eec.design.component.LoadingState
 import com.eec.design.component.TransactionRow
+import com.eec.design.component.StatCard
 import com.eec.design.icon.EecIcons
 import com.eec.design.theme.EecTheme
 import kotlinx.datetime.LocalDate
@@ -172,38 +173,29 @@ private fun TransactionControls(
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(EecTheme.spacing.xs),
         ) {
-            SummaryItem(
+            StatCard(
                 label = appString(Res.string.summary_expense),
                 value = moneyText(state.expenseTotal.minor),
+                accent = EecTheme.colors.expense,
+                containerColor = EecTheme.colors.dangerContainer,
+                modifier = Modifier.weight(1f),
             )
-            SummaryItem(
+            StatCard(
                 label = appString(Res.string.summary_income),
                 value = moneyText(state.incomeTotal.minor),
+                accent = EecTheme.colors.income,
+                containerColor = EecTheme.colors.successContainer,
+                modifier = Modifier.weight(1f),
             )
-            SummaryItem(
+            StatCard(
                 label = appString(Res.string.summary_count),
                 value = state.items.size.toString(),
+                accent = EecTheme.colors.neutral,
+                modifier = Modifier.weight(1f),
             )
         }
-    }
-}
-
-@Composable
-private fun SummaryItem(label: String, value: String) {
-    Column {
-        Text(
-            text = label,
-            style = EecTheme.typography.caption,
-            color = EecTheme.colors.onSurfaceVariant,
-        )
-        Text(
-            text = value,
-            style = EecTheme.typography.bodyStrong,
-            color = EecTheme.colors.onBackground,
-            maxLines = 1,
-        )
     }
 }
 

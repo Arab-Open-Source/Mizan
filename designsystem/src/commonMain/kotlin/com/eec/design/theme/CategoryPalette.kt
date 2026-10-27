@@ -37,7 +37,7 @@ data class CategoryPalette(private val colors: Map<CategoryColorKey, Color>) {
     companion object {
         val Light: CategoryPalette = CategoryPalette(
             mapOf(
-                CategoryColorKey.TEAL to Color(0xFF0E7C6B),
+                CategoryColorKey.TEAL to Color(0xFF173B32),
                 CategoryColorKey.GOLD to Color(0xFF9A5B12),
                 CategoryColorKey.RUST to Color(0xFFC2410C),
                 CategoryColorKey.GREEN to Color(0xFF17803D),
@@ -50,7 +50,7 @@ data class CategoryPalette(private val colors: Map<CategoryColorKey, Color>) {
 
         val Dark: CategoryPalette = CategoryPalette(
             mapOf(
-                CategoryColorKey.TEAL to Color(0xFF5EEAD4),
+                CategoryColorKey.TEAL to Color(0xFF45B88A),
                 CategoryColorKey.GOLD to Color(0xFFFCD34D),
                 CategoryColorKey.RUST to Color(0xFFFDBA74),
                 CategoryColorKey.GREEN to Color(0xFF86EFAC),

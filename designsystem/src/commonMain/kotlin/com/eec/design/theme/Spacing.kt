@@ -4,13 +4,24 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 object EecSpacing {
-    val xxs: Dp = 4.dp
-    val xs: Dp = 8.dp
-    val sm: Dp = 12.dp
-    val md: Dp = 16.dp
-    val lg: Dp = 24.dp
-    val xl: Dp = 32.dp
-    val xxl: Dp = 48.dp
+    val space1: Dp = 4.dp
+    val space2: Dp = 8.dp
+    val space3: Dp = 12.dp
+    val space4: Dp = 16.dp
+    val space5: Dp = 20.dp
+    val space6: Dp = 24.dp
+    val space8: Dp = 32.dp
+    val space10: Dp = 40.dp
+    val space12: Dp = 48.dp
+    val space16: Dp = 64.dp
+
+    val xxs: Dp = space1
+    val xs: Dp = space2
+    val sm: Dp = space3
+    val md: Dp = space4
+    val lg: Dp = space6
+    val xl: Dp = space8
+    val xxl: Dp = space12
 
     val screen: Dp = md
     val section: Dp = lg
@@ -19,6 +30,8 @@ object EecSpacing {
 object EecMotion {
     const val standardMillis: Int = 200
     const val emphasizedMillis: Int = 300
+    const val quickMillis: Int = 120
+    const val slowMillis: Int = 400
 }
 
 object EecSizes {

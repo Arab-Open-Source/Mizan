@@ -12,7 +12,7 @@ class CategoryPaletteTest {
 
     @Test
     fun resolvesTokenKeys() {
-        assertEquals(Color(0xFF0E7C6B), palette.colorFor("teal"))
+        assertEquals(Color(0xFF173B32), palette.colorFor("teal"))
         assertEquals(Color(0xFF7E22CE), palette.colorFor("plum"))
     }
 

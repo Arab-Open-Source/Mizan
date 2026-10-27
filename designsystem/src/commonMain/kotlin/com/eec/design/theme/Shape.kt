@@ -8,9 +8,13 @@ import androidx.compose.ui.unit.dp
 
 @Immutable
 data class EecShapes(
-    val input: CornerBasedShape = RoundedCornerShape(12.dp),
-    val card: CornerBasedShape = RoundedCornerShape(20.dp),
-    val sheet: CornerBasedShape = RoundedCornerShape(24.dp),
+    val radiusSmall: CornerBasedShape = RoundedCornerShape(8.dp),
+    val radiusMedium: CornerBasedShape = RoundedCornerShape(12.dp),
+    val radiusLarge: CornerBasedShape = RoundedCornerShape(16.dp),
+    val radiusExtraLarge: CornerBasedShape = RoundedCornerShape(24.dp),
+    val input: CornerBasedShape = RoundedCornerShape(10.dp),
+    val card: CornerBasedShape = RoundedCornerShape(16.dp),
+    val sheet: CornerBasedShape = radiusExtraLarge,
     val dialog: CornerBasedShape = RoundedCornerShape(28.dp),
     val chip: CornerBasedShape = RoundedCornerShape(percent = 50),
 )
